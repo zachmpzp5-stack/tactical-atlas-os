@@ -535,12 +535,12 @@ export default function LyraAssistant({ isOpen, onClose, onNavigate, showToast }
   const [messages, setMessages] = useState([]);
 
   useEffect(() => {
-    let initialGreeting = 'LYRA ONLINE // GUARDIAN PROTOCOL ACTIVE\n"Knowledge without responsibility is dangerous. Tactical Atlas exists to discover, protect, and preserve truth responsibly."\n\nGood evening, Operator. All systems operational. Active Missions: 12. Queue: 3.';
+    let initialGreeting = 'LYRA ONLINE // GUARDIAN PROTOCOL ACTIVE\\n"Knowledge without responsibility is dangerous. Tactical Atlas exists to discover, protect, and preserve truth responsibly."\\n\\nGood evening, Operator. All systems operational. Active Missions: 12. Queue: 3.';
 
     if (userRole === 'FOUNDER' || userClearance === 'ROOT') {
-      initialGreeting = 'LYRA ONLINE // FOUNDER ROOT MODE\n"Welcome back, Founder. Tactical Atlas has been active for 243 days. Your last major milestone was activating the AI Production Pipeline."';
+      initialGreeting = 'LYRA ONLINE // FOUNDER ROOT MODE\\n"Welcome back, Founder. Tactical Atlas has been active for 243 days. Your last major milestone was activating the AI Production Pipeline."';
     } else if (isOmegaCommander) {
-      initialGreeting = 'LYRA ONLINE // COMMANDER MODE\n"Welcome back, Commander. I was monitoring the production queue while you were away. Your current priorities suggest Episode 4 should be moved ahead of schedule."';
+      initialGreeting = 'LYRA ONLINE // COMMANDER MODE\\n"Welcome back, Commander. I was monitoring the production queue while you were away. Your current priorities suggest Episode 4 should be moved ahead of schedule."';
     }
 
     setMessages([
@@ -686,9 +686,11 @@ export default function LyraAssistant({ isOpen, onClose, onNavigate, showToast }
                     type="button"
                     key={style}
                     onClick={() => setCommStyle(style)}
-                    className={`py-1 rounded border text-[9px] font-bold ${
-                      commStyle === style ? 'bg-bronze-gold/20 text-bronze-light border-bronze-gold' : 'bg-[#07110d] border-stone-border text-slate-400'
-                    }`}
+                    className={
+                      commStyle === style
+                        ? 'py-1 rounded border text-[9px] font-bold bg-bronze-gold/20 text-bronze-light border-bronze-gold'
+                        : 'py-1 rounded border text-[9px] font-bold bg-[#07110d] border-stone-border text-slate-400'
+                    }
                   >
                     {style}
                   </button>
@@ -704,11 +706,33 @@ export default function LyraAssistant({ isOpen, onClose, onNavigate, showToast }
                     type="button"
                     key={style}
                     onClick={() => setBriefStyle(style)}
-                    className={`py-1 rounded border text-[9px] font-bold ${
-                      briefStyle === style ? 'bg-bronze-gold/20 text-bronze-light border-bronze-gold' : 'bg-[#07110d] border-stone-border text-slate-400'
-                    }`}
+                    className={
+                      briefStyle === style
+                        ? 'py-1 rounded border text-[9px] font-bold bg-bronze-gold/20 text-bronze-light border-bronze-gold'
+                        : 'py-1 rounded border text-[9px] font-bold bg-[#07110d] border-stone-border text-slate-400'
+                    }
                   >
                     {style}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <span className="text-[10px] text-slate-400 block">VOICE SYNTHESIS</span>
+              <div className="grid grid-cols-2 gap-1">
+                {['Charlie', 'Custom Voice'].map((v) => (
+                  <button
+                    type="button"
+                    key={v}
+                    onClick={() => setVoice(v)}
+                    className={
+                      voice === v
+                        ? 'py-1 rounded border text-[9px] font-bold bg-tactical-dim text-tactical-glow border-tactical-green'
+                        : 'py-1 rounded border text-[9px] font-bold bg-[#07110d] border-stone-border text-slate-400'
+                    }
+                  >
+                    {v}
                   </button>
                 ))}
               </div>
@@ -740,16 +764,16 @@ export default function LyraAssistant({ isOpen, onClose, onNavigate, showToast }
           {messages.map((msg) => (
             <div
               key={msg.id}
-              className={`p-3.5 rounded border text-xs leading-relaxed ${
+              className={\`p-3.5 rounded border text-xs leading-relaxed \${
                 msg.isBlocked
                   ? 'bg-threat-red/10 border-threat-red text-slate-100 shadow-lg'
                   : msg.sender === 'COMMANDER' || msg.sender === 'FOUNDER'
                   ? 'bg-[#07110d] border-stone-border text-slate-200 ml-6'
                   : 'black-glass-glow border-tactical-green/50 text-slate-100 mr-2 shadow-tactical'
-              }`}
+              }\`}
             >
               <div className="flex justify-between items-center mb-1.5 text-[9px] font-bold">
-                <span className={`flex items-center gap-1 ${msg.isBlocked ? 'text-threat-red' : 'text-tactical-glow'}`}>
+                <span className={\`flex items-center gap-1 \${msg.isBlocked ? 'text-threat-red' : 'text-tactical-glow'}\`}>
                   {msg.isBlocked ? <ShieldAlert className="w-3.5 h-3.5 text-threat-red" /> : <ShieldCheck className="w-3 h-3 text-tactical-green" />}
                   [{msg.sender}]
                 </span>
@@ -778,11 +802,11 @@ export default function LyraAssistant({ isOpen, onClose, onNavigate, showToast }
             type="button"
             onClick={toggleMic}
             aria-label="Toggle Microphone Input"
-            className={`p-2 rounded border transition-colors ${
+            className={\`p-2 rounded border transition-colors \${
               isListening
                 ? 'bg-threat-red/20 border-threat-red text-threat-red animate-pulse'
                 : 'bg-[#07110d] border-stone-border text-slate-300 hover:text-white'
-            }`}
+            }\`}
           >
             {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4 text-tactical-green" />}
           </button>
@@ -808,7 +832,10 @@ export default function LyraAssistant({ isOpen, onClose, onNavigate, showToast }
       </div>
     </>
   );
-}import React, { useState } from 'react';
+}`,
+
+  // 18. Expedition Map Component
+  'src/components/ExpeditionMap.jsx': `import React, { useState } from 'react';
 import { Compass, Crosshair, MapPin, ZoomIn, ZoomOut, RefreshCw, Eye, Shield } from 'lucide-react';
 import TacticalEarthProjection from './TacticalEarthProjection';
 import { EXPEDITION_LOCATIONS } from '../data/mockData';
@@ -833,7 +860,7 @@ export default function ExpeditionMap({ onSelectCase }) {
   };
 
   return (
-    <div className="black-glass-glow rounded-lg p-4 flex flex-col justify-between relative overflow-hidden min-h-[520px] font-mono shadow-2xl">
+    <div className="black-glass-glow rounded-lg p-4 flex flex-col justify-between relative overflow-hidden min-h-[560px] font-mono shadow-2xl">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-stone-border/80 mb-2 z-20 gap-2">
         <div>
           <h3 className="font-barlow font-bold text-base sm:text-lg tracking-wider text-slate-100 uppercase flex items-center gap-2">
@@ -851,11 +878,11 @@ export default function ExpeditionMap({ onSelectCase }) {
               type="button"
               key={mode}
               onClick={() => setMapMode(mode)}
-              className={`px-2.5 py-1 rounded border transition-all ${
+              className={\`px-2.5 py-1 rounded border transition-all \${
                 mapMode === mode
                   ? 'bg-tactical-dim text-tactical-glow border-tactical-green font-bold shadow-tactical'
                   : 'bg-[#07110d] text-slate-400 border-stone-border hover:text-white'
-              }`}
+              }\`}
             >
               {mode}
             </button>
@@ -890,16 +917,16 @@ export default function ExpeditionMap({ onSelectCase }) {
         </div>
       </div>
 
-      <div className="relative w-full h-[500px] bg-[#07110d] bg-map-texture rounded border border-stone-border/80 overflow-hidden shadow-inner flex items-center justify-center">
+      <div className="relative w-full h-[540px] bg-[#07110d] bg-map-texture rounded border border-stone-border/80 overflow-hidden shadow-inner flex items-center justify-center">
         <div className="absolute inset-0 scanline-overlay pointer-events-none z-10 opacity-30"></div>
 
         <TacticalEarthProjection className="absolute inset-0 z-0" />
 
         <div className="absolute inset-0 opacity-25 flex items-center justify-center pointer-events-none z-0">
-          <div className="w-[520px] h-[520px] rounded-full border border-tactical-green/50 relative flex items-center justify-center">
-            <div className="w-[400px] h-[400px] rounded-full border border-tactical-green/30"></div>
-            <div className="w-[260px] h-[260px] rounded-full border border-tactical-green/30"></div>
-            <div className="w-[120px] h-[120px] rounded-full border border-tactical-green/30"></div>
+          <div className="w-[560px] h-[560px] rounded-full border border-tactical-green/50 relative flex items-center justify-center">
+            <div className="w-[420px] h-[420px] rounded-full border border-tactical-green/30"></div>
+            <div className="w-[280px] h-[280px] rounded-full border border-tactical-green/30"></div>
+            <div className="w-[140px] h-[140px] rounded-full border border-tactical-green/30"></div>
             <Compass className="w-full h-full text-tactical-green animate-radar-sweep absolute" />
           </div>
         </div>
@@ -911,7 +938,7 @@ export default function ExpeditionMap({ onSelectCase }) {
 
         <div
           className="w-full h-full relative transition-transform duration-300 ease-out origin-center"
-          style={{ transform: `scale(${zoomLevel})` }}
+          style={{ transform: \`scale(\${zoomLevel})\` }}
         >
           <svg className="absolute inset-0 w-full h-full pointer-events-none z-10">
             {connectionLines.map((line, idx) => {
@@ -922,10 +949,10 @@ export default function ExpeditionMap({ onSelectCase }) {
               return (
                 <line
                   key={idx}
-                  x1={`${start.x}%`}
-                  y1={`${start.y}%`}
-                  x2={`${end.x}%`}
-                  y2={`${end.y}%`}
+                  x1={\`\${start.x}%\`}
+                  y1={\`\${start.y}%\`}
+                  x2={\`\${end.x}%\`}
+                  y2={\`\${end.y}%\`}
                   stroke="#10B981"
                   strokeWidth="1.5"
                   opacity="0.8"
@@ -942,8 +969,8 @@ export default function ExpeditionMap({ onSelectCase }) {
                 type="button"
                 key={loc.id}
                 onClick={() => setSelectedLoc(loc)}
-                style={{ top: `${loc.y}%`, left: `${loc.x}%` }}
-                aria-label={`Select ${loc.name}`}
+                style={{ top: \`\${loc.y}%\`, left: \`\${loc.x}%\` }}
+                aria-label={\`Select \${loc.name}\`}
                 className="absolute -translate-x-1/2 -translate-y-1/2 z-20 group focus:outline-none"
               >
                 <div className="relative flex items-center justify-center">
@@ -956,9 +983,9 @@ export default function ExpeditionMap({ onSelectCase }) {
                     </div>
                   ) : (
                     <MapPin
-                      className={`w-5 h-5 transition-transform group-hover:scale-125 ${
+                      className={\`w-5 h-5 transition-transform group-hover:scale-125 \${
                         isSelected ? 'text-tactical-glow scale-125' : 'text-bronze-gold'
-                      }`}
+                      }\`}
                     />
                   )}
                 </div>
@@ -998,7 +1025,10 @@ export default function ExpeditionMap({ onSelectCase }) {
       </div>
     </div>
   );
-}import React, { useState, useEffect } from 'react';
+}`,
+
+  // 19. Headquarters Page
+  'src/pages/Headquarters.jsx': `import React, { useState, useEffect } from 'react';
 import ParticleBackground from '../components/ParticleBackground';
 import ExpeditionMap from '../components/ExpeditionMap';
 import ProductionPipeline from '../components/ProductionPipeline';
@@ -1008,7 +1038,7 @@ import LyraCoreProjection from '../components/LyraCoreProjection';
 import { LIBRARY_COLLECTIONS, CASE_FILES_EXPANDED, ARCHIVES_COLLECTION, SYSTEM_STATUS } from '../data/mockData';
 import { getHQStatus } from '../services/hqService';
 import { useAuth } from '../context/AuthContext';
-import { Video, Mic, Plus, Radio, Clock, Compass, Activity, Shield, Cpu, BookOpen, CheckCircle2, Circle, Bot, Lock, FileText, ShieldCheck } from 'lucide-react';
+import { Video, Mic, Plus, Clock, Compass, Activity, Shield, Cpu, BookOpen, CheckCircle2, Circle, Bot, Lock, FileText, ShieldCheck, Layers } from 'lucide-react';
 
 export default function Headquarters({ onNavigate, notifications, showToast }) {
   const { user } = useAuth();
@@ -1041,22 +1071,13 @@ export default function Headquarters({ onNavigate, notifications, showToast }) {
     return () => clearInterval(timer);
   }, []);
 
-  const renderStatusDot = (status) => {
-    if (status === 'ONLINE' || status === 'OPERATIONAL' || status === 'ACTIVE' || status === 'elevenlabs' || status === 'openai') {
-      return <Circle className="w-2 h-2 fill-tactical-green text-tactical-green animate-pulse" />;
-    }
-    if (status === 'DEGRADED' || status === 'UNKNOWN' || status === 'mock') {
-      return <Circle className="w-2 h-2 fill-bronze-gold text-bronze-gold" />;
-    }
-    return <Circle className="w-2 h-2 fill-threat-red text-threat-red" />;
-  };
-
   const activeOperatorName = user?.name || SYSTEM_STATUS.userName;
-  const activeOperatorRole = user?.role || SYSTEM_STATUS.role;
   const activeClearance = user?.clearanceLevel || hqTelemetry?.clearanceLevel || SYSTEM_STATUS.clearance;
   const isOmegaCommander = activeClearance === 'OMEGA' || user?.role === 'ADMIN' || user?.role === 'FOUNDER';
 
   const activeCasesVal = hqTelemetry ? String(hqTelemetry.activeCases) : '12';
+  const episodesVal = hqTelemetry ? String(hqTelemetry.productionJobs) : '24';
+  const assetsVal = hqTelemetry ? Number(hqTelemetry.completedAssets).toLocaleString() : '1,248';
   const aiProviderVal = hqTelemetry?.aiProvider ? hqTelemetry.aiProvider.toUpperCase() : 'ELEVENLABS';
   const queueDepthVal = hqTelemetry ? String(hqTelemetry.queueDepth) : '3';
 
@@ -1064,161 +1085,138 @@ export default function Headquarters({ onNavigate, notifications, showToast }) {
     ? notifications
     : (hqTelemetry?.notifications || []);
 
+  const hoursStr = String(countdown.hours).padStart(2, '0');
+  const minsStr = String(countdown.minutes).padStart(2, '0');
+  const secsStr = String(countdown.seconds).padStart(2, '0');
+
   return (
-    <div className="p-4 md:p-6 space-y-6 font-plex relative min-h-screen bg-command-room">
+    <div className="p-4 md:p-6 space-y-4 font-plex relative min-h-screen bg-command-room select-none">
       <ParticleBackground />
 
-      {/* 1. COMMAND HUD PANEL */}
-      <div className="black-glass-glow rounded-lg p-5 relative overflow-hidden z-10 font-mono shadow-2xl">
-        <div className="absolute inset-0 bg-moving-grid pointer-events-none opacity-20"></div>
+      {/* 1. SINGLE HORIZONTAL COMMAND HUD STRIP */}
+      <div className="black-glass-glow rounded-lg px-4 py-2.5 font-mono z-10 relative shadow-2xl flex flex-wrap items-center justify-between gap-3 text-xs border-tactical-green/40">
+        <div className="flex items-center gap-3">
+          <Compass className="w-5 h-5 text-bronze-gold animate-spin" style={{ animationDuration: '24s' }} />
+          <span className="font-barlow font-black text-lg text-slate-100 uppercase tracking-wider">TACTICAL ATLAS</span>
+          <span className="text-[10px] text-bronze-gold uppercase font-bold border-l border-stone-border pl-3">
+            {activeOperatorName} [{activeClearance}]
+          </span>
+          {isDegraded && (
+            <span className="text-[8px] text-threat-red font-bold animate-pulse uppercase px-1.5 py-0.5 bg-threat-red/10 border border-threat-red rounded">
+              LOCAL MODE
+            </span>
+          )}
+        </div>
 
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 relative z-10">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded border-2 border-bronze-gold bg-[#07110d] flex items-center justify-center shadow-bronze flex-shrink-0">
-              <Compass className="w-7 h-7 text-bronze-gold animate-spin" style={{ animationDuration: '24s' }} />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="font-barlow font-black text-2xl sm:text-3xl tracking-wider text-slate-100 uppercase">
-                  TACTICAL ATLAS CORE
-                </h1>
-                {isDegraded ? (
-                  <span className="px-2 py-0.5 rounded bg-threat-red/20 border border-threat-red text-threat-red text-[9px] font-bold animate-pulse">
-                    LOCAL COMMAND MODE
-                  </span>
-                ) : (
-                  <span className="px-2 py-0.5 rounded bg-tactical-dim/90 border border-tactical-green text-tactical-glow text-[9px] font-bold">
-                    COMMAND FACILITY
-                  </span>
-                )}
-              </div>
-              <p className="text-[10px] text-slate-400 mt-0.5">
-                OPERATOR: <span className="text-bronze-gold font-bold">{activeOperatorName}</span> | ROLE: <span className="text-slate-200">{activeOperatorRole}</span>
-              </p>
-            </div>
+        {/* Streamlined Horizontal Telemetry Strip */}
+        <div className="flex items-center gap-4 text-[10px] font-mono">
+          <div className="flex items-center gap-1.5">
+            <Circle className="w-2 h-2 fill-tactical-green text-tactical-green animate-pulse" />
+            <span className="text-slate-300 font-bold">DB: {hqTelemetry?.databaseStatus || 'ONLINE'}</span>
           </div>
+          <div className="flex items-center gap-1.5">
+            <Circle className="w-2 h-2 fill-tactical-green text-tactical-green animate-pulse" />
+            <span className="text-slate-300 font-bold">REDIS: {hqTelemetry?.redisStatus || 'ONLINE'}</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Circle className="w-2 h-2 fill-tactical-green text-tactical-green animate-pulse" />
+            <span className="text-slate-300 font-bold">AI: {aiProviderVal}</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Circle className="w-2 h-2 fill-tactical-green text-tactical-green animate-pulse" />
+            <span className="text-tactical-glow font-bold">CHARLIE: READY</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Circle className="w-2 h-2 fill-tactical-green text-tactical-green animate-pulse" />
+            <span className="text-tactical-glow font-bold">LYRA: ONLINE</span>
+          </div>
+          <div className="hidden xl:flex items-center gap-3 border-l border-stone-border/80 pl-3 text-slate-400">
+            <span>CASES: <strong className="text-slate-100">{activeCasesVal}</strong></span>
+            <span>PROD: <strong className="text-tactical-glow">{episodesVal}</strong></span>
+            <span>ASSETS: <strong className="text-slate-100">{assetsVal}</strong></span>
+          </div>
+        </div>
 
-          <div className="flex flex-wrap items-center gap-3 text-xs">
-            <div className="flex items-center gap-3 bg-[#07110d] px-3.5 py-2 rounded border border-stone-border">
-              <span className="text-[9px] text-slate-500 font-bold block uppercase border-r border-stone-border pr-2.5">COMMAND HUD</span>
-              <div className="flex items-center gap-1.5 text-[10px]">
-                {renderStatusDot(hqTelemetry?.databaseStatus || 'ONLINE')}
-                <span className="text-slate-200 font-bold">DATABASE ● {hqTelemetry?.databaseStatus || 'ONLINE'}</span>
-              </div>
-              <div className="flex items-center gap-1.5 text-[10px]">
-                {renderStatusDot(hqTelemetry?.redisStatus || 'ONLINE')}
-                <span className="text-slate-200 font-bold">REDIS ● {hqTelemetry?.redisStatus || 'ONLINE'}</span>
-              </div>
-              <div className="flex items-center gap-1.5 text-[10px]">
-                {renderStatusDot(aiProviderVal)}
-                <span className="text-slate-200 font-bold">AI ENGINE ● {aiProviderVal} ACTIVE</span>
-              </div>
-              <div className="flex items-center gap-1.5 text-[10px]">
-                {renderStatusDot('ONLINE')}
-                <span className="text-tactical-glow font-bold">CHARLIE ● READY</span>
-              </div>
-              <div className="flex items-center gap-1.5 text-[10px]">
-                {renderStatusDot('ONLINE')}
-                <span className="text-tactical-glow font-bold">LYRA ● ONLINE</span>
-              </div>
-            </div>
-
-            <div className="px-3 py-2 bg-[#07110d] border border-tactical-green/60 rounded flex items-center gap-2 text-tactical-glow font-bold text-[10px]">
-              <ShieldCheck className="w-4 h-4 text-tactical-green animate-pulse" />
-              <div>
-                <span className="text-[8px] text-slate-400 block uppercase">GUARDIAN PROTOCOL</span>
-                <span className="text-tactical-glow">ACTIVE ✓</span>
-              </div>
-            </div>
-
-            <div className="px-3 py-2 bg-[#07110d] border border-bronze-gold/40 rounded flex items-center gap-2">
-              <Clock className="w-4 h-4 text-bronze-gold" />
-              <div>
-                <span className="text-[8px] text-slate-500 block uppercase">PUBLISH COUNTDOWN</span>
-                <span className="text-bronze-gold font-bold text-[10px]">
-                  {String(countdown.hours).padStart(2, '0')}:{String(countdown.minutes).padStart(2, '0')}:{String(countdown.seconds).padStart(2, '0')}
-                </span>
-              </div>
-            </div>
-
-            <div className="px-3 py-2 bg-[#07110d] border border-tactical-green/40 rounded flex items-center gap-1.5 text-tactical-glow font-bold text-[10px]">
-              <Radio className="w-3.5 h-3.5 text-tactical-green animate-pulse" />
-              <span>CLEARANCE ● {activeClearance}</span>
-            </div>
+        {/* Right Timer & Status */}
+        <div className="flex items-center gap-3 text-[10px] font-mono">
+          <div className="flex items-center gap-1 text-bronze-gold font-bold">
+            <Clock className="w-3.5 h-3.5 text-bronze-gold" />
+            <span>{hoursStr}:{minsStr}:{secsStr}</span>
+          </div>
+          <div className="flex items-center gap-1 text-tactical-glow font-bold bg-[#07110d] px-2 py-0.5 rounded border border-tactical-green/40">
+            <ShieldCheck className="w-3.5 h-3.5 text-tactical-green" />
+            <span>GUARDIAN: ACTIVE</span>
           </div>
         </div>
       </div>
 
-      {/* 2. EXPANDED GLOBAL SITUATION WALL & LYRA CORE PROJECTION */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 z-10 relative">
-        <div className="lg:col-span-8 relative">
-          <div className="animate-scanner-line z-20"></div>
-          <ExpeditionMap onSelectCase={(caseId) => onNavigate('/cases', caseId)} />
-        </div>
+      {/* 2. DOMINANT MAP CENTERPIECE */}
+      <div className="z-10 relative">
+        <div className="animate-scanner-line z-20"></div>
+        <ExpeditionMap onSelectCase={(caseId) => onNavigate('/cases', caseId)} />
+      </div>
 
-        {/* Embedded Lyra AI Core Visual Projection */}
+      {/* 3. COMMAND BRIDGE LAYERS */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 z-10 relative">
+        {/* Lyra AI Core Projection */}
         <div className="lg:col-span-4">
           <LyraCoreProjection onOpenAssistant={() => setLyraOpen(true)} />
         </div>
-      </div>
 
-      {/* 3. CLASSIFIED BRIEFING DISPLAY & COMMAND WORKFLOW */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 z-10 relative">
-        <div className="lg:col-span-6 black-glass rounded-lg p-5 flex flex-col justify-between relative overflow-hidden">
-          <div className="absolute top-3 right-3 px-2 py-0.5 bg-bronze-gold/20 border border-bronze-gold text-bronze-light text-[9px] font-bold uppercase tracking-widest">
-            CLASSIFIED BRIEFING
-          </div>
-
+        {/* Mission Briefing Room Theater */}
+        <div className="lg:col-span-4 black-glass rounded-lg p-4 flex flex-col justify-between relative overflow-hidden">
           <div>
-            <div className="pb-2 border-b border-stone-border mb-3">
-              <h3 className="font-barlow font-bold text-lg text-slate-100 uppercase tracking-wider flex items-center gap-2">
-                <FileText className="w-5 h-5 text-bronze-gold" />
-                MISSION FILE: EL DORADO
+            <div className="flex justify-between items-center pb-2 border-b border-stone-border/80 mb-2">
+              <h3 className="font-barlow font-bold text-base text-slate-100 uppercase tracking-wider flex items-center gap-2">
+                <FileText className="w-4 h-4 text-bronze-gold" />
+                CLASSIFIED BRIEFING
               </h3>
-              <span className="text-[9px] text-bronze-gold uppercase block">STATUS: ACTIVE INVESTIGATION</span>
+              <span className="px-2 py-0.5 rounded bg-threat-red/20 border border-threat-red text-threat-red text-[8px] font-bold">
+                HIGH PRIORITY
+              </span>
             </div>
 
-            <div className="relative rounded overflow-hidden mb-3 h-44 bg-[#07110d] border border-stone-border group">
+            <div className="relative rounded overflow-hidden mb-2 h-36 bg-[#07110d] border border-stone-border group">
               <SafeImage
                 src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80"
                 alt="El Dorado"
                 className="w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#0c1a15] via-transparent to-transparent"></div>
-              <div className="absolute bottom-3 left-3">
-                <span className="font-barlow font-bold text-xl text-slate-100 block">EL DORADO: THE CITY OF GOLD</span>
-                <span className="text-[10px] text-bronze-gold block">OBJECTIVE: RECOVER HISTORICAL INTELLIGENCE</span>
+              <div className="absolute bottom-2 left-2">
+                <span className="font-barlow font-bold text-base text-slate-100 block">EL DORADO: CITY OF GOLD</span>
+                <span className="text-[9px] text-bronze-gold block">PRIMARY OBJECTIVE // SUBTERRANEAN BASIN</span>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px] bg-[#07110d] p-3 rounded border border-stone-border mb-3">
+            <p className="text-[11px] text-slate-300 leading-relaxed bg-[#07110d] p-2.5 border border-stone-border rounded mb-2">
+              Primary investigation focused on 16th-century Spanish cartography and subterranean river systems.
+            </p>
+
+            <div className="grid grid-cols-2 gap-2 text-[9px] bg-[#07110d] p-2 rounded border border-stone-border">
               <div><span className="text-slate-500 block">RESEARCH:</span><span className="text-tactical-glow font-bold">92% COMPLETE</span></div>
               <div><span className="text-slate-500 block">NARRATION:</span><span className="text-tactical-glow font-bold">CHARLIE READY</span></div>
-              <div><span className="text-slate-500 block">OPERATOR:</span><span className="text-bronze-gold font-bold">{activeOperatorName}</span></div>
-              <div><span className="text-slate-500 block">CLEARANCE:</span><span className="text-tactical-glow font-bold">{activeClearance}</span></div>
             </div>
           </div>
 
           <button
             type="button"
             onClick={() => onNavigate('/cases', 'CASE-001')}
-            className="w-full py-2.5 bg-bronze-gold/20 hover:bg-bronze-gold/30 border border-bronze-gold text-xs font-bold text-bronze-light rounded uppercase mt-2 shadow-bronze"
+            className="w-full py-2 bg-bronze-gold/20 hover:bg-bronze-gold/30 border border-bronze-gold text-xs font-bold text-bronze-light rounded uppercase mt-2 shadow-bronze"
           >
-            OPEN CLASSIFIED DOSSIER [CASE-001]
+            OPEN DOSSIER [CASE-001]
           </button>
         </div>
 
-        <div className="lg:col-span-6 black-glass rounded-lg p-5 flex flex-col justify-between">
+        {/* Command Production Workflow */}
+        <div className="lg:col-span-4 black-glass rounded-lg p-4 flex flex-col justify-between">
           <div>
-            <div className="flex justify-between items-center pb-2 border-b border-stone-border mb-3">
-              <div>
-                <h3 className="font-barlow font-bold text-lg text-slate-100 uppercase tracking-wider flex items-center gap-2">
-                  <Cpu className="w-5 h-5 text-tactical-green" />
-                  COMMAND PRODUCTION WORKFLOW
-                </h3>
-                <span className="text-[9px] text-bronze-gold uppercase block">SEQUENTIAL AI PIPELINE STAGES</span>
-              </div>
-              <span className="px-2 py-0.5 rounded bg-tactical-dim border border-tactical-green text-tactical-glow text-[9px] font-bold">
+            <div className="flex justify-between items-center pb-2 border-b border-stone-border/80 mb-2">
+              <h3 className="font-barlow font-bold text-base text-slate-100 uppercase tracking-wider flex items-center gap-2">
+                <Layers className="w-4 h-4 text-tactical-green" />
+                COMMAND WORKFLOW
+              </h3>
+              <span className="px-2 py-0.5 rounded bg-tactical-dim border border-tactical-green text-tactical-glow text-[8px] font-bold">
                 QUEUE: {queueDepthVal} JOBS
               </span>
             </div>
@@ -1226,160 +1224,147 @@ export default function Headquarters({ onNavigate, notifications, showToast }) {
             <ProductionPipeline />
           </div>
 
-          <div className="grid grid-cols-3 gap-2 text-[10px] mt-4 pt-3 border-t border-stone-border">
+          <div className="grid grid-cols-3 gap-2 text-[9px] mt-2 pt-2 border-t border-stone-border/80">
             <button
               type="button"
               onClick={() => { onNavigate('/ai-studio'); if (showToast) showToast('SIMULATION: VISUAL PACK INITIALIZED'); }}
-              className="p-2.5 bg-[#07110d] border border-stone-border rounded hover:border-bronze-gold text-slate-300 flex flex-col items-center gap-1 transition-all"
+              className="p-2 bg-[#07110d] border border-stone-border rounded hover:border-bronze-gold text-slate-300 flex flex-col items-center gap-1 transition-all"
             >
-              <Video className="w-4 h-4 text-bronze-gold" />
-              GENERATE VISUALS
+              <Video className="w-3.5 h-3.5 text-bronze-gold" />
+              VISUALS
             </button>
             <button
               type="button"
               onClick={() => { onNavigate('/ai-studio'); if (showToast) showToast('SIMULATION: CHARLIE VOICE PROFILE LOADED'); }}
-              className="p-2.5 bg-[#07110d] border border-stone-border rounded hover:border-bronze-gold text-slate-300 flex flex-col items-center gap-1 transition-all"
+              className="p-2 bg-[#07110d] border border-stone-border rounded hover:border-bronze-gold text-slate-300 flex flex-col items-center gap-1 transition-all"
             >
-              <Mic className="w-4 h-4 text-tactical-green" />
-              GENERATE NARRATION
+              <Mic className="w-3.5 h-3.5 text-tactical-green" />
+              NARRATION
             </button>
             <button
               type="button"
               onClick={() => { onNavigate('/cases'); if (showToast) showToast('SIMULATION: NEW CASE DOSSIER TEMPLATE LOADED'); }}
-              className="p-2.5 bg-[#07110d] border border-stone-border rounded hover:border-bronze-gold text-slate-300 flex flex-col items-center gap-1 transition-all"
+              className="p-2 bg-[#07110d] border border-stone-border rounded hover:border-bronze-gold text-slate-300 flex flex-col items-center gap-1 transition-all"
             >
-              <Plus className="w-4 h-4 text-amber-500" />
-              CREATE CASE
+              <Plus className="w-3.5 h-3.5 text-amber-500" />
+              NEW CASE
             </button>
           </div>
         </div>
       </div>
 
-      {/* 4. COMMANDER CONSOLE (OMEGA CLEARANCE ONLY) */}
+      {/* 4. COMMANDER ACCESS OVERLAY (OMEGA CLEARANCE ONLY) */}
       {isOmegaCommander && (
-        <div className="black-glass-glow rounded-lg p-5 z-10 relative border-bronze-gold/60">
-          <div className="flex justify-between items-center pb-2 border-b border-stone-border mb-3">
-            <div>
-              <h2 className="font-barlow font-bold text-lg text-slate-100 uppercase tracking-wider flex items-center gap-2">
-                <Bot className="w-5 h-5 text-bronze-gold" />
-                COMMANDER ACCESS // OMEGA CONSOLE
+        <div className="black-glass-glow rounded-lg p-4 z-10 relative border-bronze-gold/60">
+          <div className="flex justify-between items-center pb-2 border-b border-stone-border mb-2">
+            <div className="flex items-center gap-2">
+              <Bot className="w-4 h-4 text-bronze-gold" />
+              <h2 className="font-barlow font-bold text-base text-slate-100 uppercase tracking-wider">
+                COMMANDER CONSOLE // OMEGA CLEARANCE
               </h2>
-              <span className="text-[10px] text-bronze-gold uppercase block">HIGH-COMMAND OVERRIDE & LYRA AI CONTROL</span>
             </div>
-            <span className="px-2.5 py-0.5 rounded bg-bronze-gold/20 border border-bronze-gold text-bronze-light text-[10px] font-bold flex items-center gap-1">
+            <span className="px-2 py-0.5 rounded bg-bronze-gold/20 border border-bronze-gold text-bronze-light text-[9px] font-bold flex items-center gap-1">
               <Lock className="w-3 h-3 text-bronze-gold" /> RESTRICTED OMEGA
             </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 text-xs">
             <button
               type="button"
               onClick={() => setLyraOpen(true)}
-              className="p-3 bg-[#07110d] border border-stone-border hover:border-bronze-gold rounded text-left transition-all group"
+              className="p-2.5 bg-[#07110d] border border-stone-border hover:border-bronze-gold rounded text-left transition-all group"
             >
-              <span className="text-bronze-gold font-bold block mb-1 group-hover:text-bronze-light">[OPEN LYRA ASSISTANT]</span>
-              <span className="text-[10px] text-slate-400 block">Launch Lyra AI tactical advisor & voice stream.</span>
+              <span className="text-bronze-gold font-bold block text-[11px] group-hover:text-bronze-light">[OPEN LYRA ASSISTANT]</span>
+              <span className="text-[9px] text-slate-400 block">Launch Lyra AI tactical advisor & voice stream.</span>
             </button>
 
             <button
               type="button"
               onClick={() => onNavigate('/status')}
-              className="p-3 bg-[#07110d] border border-stone-border hover:border-bronze-gold rounded text-left transition-all group"
+              className="p-2.5 bg-[#07110d] border border-stone-border hover:border-bronze-gold rounded text-left transition-all group"
             >
-              <span className="text-tactical-glow font-bold block mb-1 group-hover:text-tactical-green">[VIEW DEPARTMENTS]</span>
-              <span className="text-[10px] text-slate-400 block">Inspect infrastructure relays, database, & Redis health.</span>
+              <span className="text-tactical-glow font-bold block text-[11px] group-hover:text-tactical-green">[VIEW DEPARTMENTS]</span>
+              <span className="text-[9px] text-slate-400 block">Inspect infrastructure relays & system health.</span>
             </button>
 
             <button
               type="button"
               onClick={() => { if (showToast) showToast('COMMANDER OVERRIDE: ALL RELAYS LOCKED'); }}
-              className="p-3 bg-[#07110d] border border-stone-border hover:border-bronze-gold rounded text-left transition-all group"
+              className="p-2.5 bg-[#07110d] border border-stone-border hover:border-bronze-gold rounded text-left transition-all group"
             >
-              <span className="text-threat-red font-bold block mb-1 group-hover:text-red-400">[SYSTEM OVERRIDE]</span>
-              <span className="text-[10px] text-slate-400 block">Lock or override automation queues immediately.</span>
+              <span className="text-threat-red font-bold block text-[11px] group-hover:text-red-400">[SYSTEM OVERRIDE]</span>
+              <span className="text-[9px] text-slate-400 block">Lock or override automation queues.</span>
             </button>
 
             <button
               type="button"
               onClick={() => { onNavigate('/cases'); if (showToast) showToast('MISSION CREATION TEMPLATE LOADED'); }}
-              className="p-3 bg-[#07110d] border border-stone-border hover:border-bronze-gold rounded text-left transition-all group"
+              className="p-2.5 bg-[#07110d] border border-stone-border hover:border-bronze-gold rounded text-left transition-all group"
             >
-              <span className="text-slate-100 font-bold block mb-1 group-hover:text-white">[CREATE OPERATION]</span>
-              <span className="text-[10px] text-slate-400 block">Initialize new case file & research node.</span>
+              <span className="text-slate-100 font-bold block text-[11px] group-hover:text-white">[CREATE OPERATION]</span>
+              <span className="text-[9px] text-slate-400 block">Initialize new case file & research node.</span>
             </button>
           </div>
         </div>
       )}
 
-      {/* 5. GRAND LIBRARY & COMMS DOCK */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 z-10 relative">
-        <div className="lg:col-span-7 black-glass rounded-lg p-5">
-          <div className="flex justify-between items-center pb-2 border-b border-stone-border mb-3">
-            <div>
-              <h3 className="font-barlow font-bold text-base text-slate-100 uppercase tracking-wider flex items-center gap-2">
-                <BookOpen className="w-4 h-4 text-bronze-gold" />
-                GRAND LIBRARY DOCK
-              </h3>
-              <span className="text-[9px] text-bronze-gold uppercase block">ARCHIVES, DOSSIERS & MEDIA VAULT</span>
-            </div>
-            <button
-              type="button"
-              onClick={() => onNavigate('/library')}
-              className="text-xs text-tactical-glow hover:underline font-bold"
-            >
+      {/* 5. COMMS & DOCK LAYER */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 z-10 relative">
+        <div className="lg:col-span-7 black-glass rounded-lg p-4">
+          <div className="flex justify-between items-center pb-2 border-b border-stone-border mb-2">
+            <h3 className="font-barlow font-bold text-sm text-slate-100 uppercase tracking-wider flex items-center gap-2">
+              <BookOpen className="w-4 h-4 text-bronze-gold" />
+              GRAND LIBRARY DOCK
+            </h3>
+            <button type="button" onClick={() => onNavigate('/library')} className="text-[10px] text-tactical-glow hover:underline font-bold">
               EXPLORE LIBRARY →
             </button>
           </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {LIBRARY_COLLECTIONS.map((c) => (
               <button
                 type="button"
                 key={c.id}
                 onClick={() => onNavigate('/library')}
-                className="p-3 bg-[#07110d] border border-stone-border hover:border-bronze-gold rounded text-left transition-all"
+                className="p-2 bg-[#07110d] border border-stone-border hover:border-bronze-gold rounded text-left transition-all"
               >
-                <span className="font-barlow font-bold text-sm text-slate-100 block truncate">{c.title}</span>
-                <span className="text-[9px] text-bronze-gold block mt-1">{c.cases} DOSSIERS</span>
+                <span className="font-barlow font-bold text-xs text-slate-100 block truncate">{c.title}</span>
+                <span className="text-[8px] text-bronze-gold block">{c.cases} DOSSIERS</span>
               </button>
             ))}
           </div>
         </div>
 
-        <div className="lg:col-span-5 black-glass rounded-lg p-5">
-          <div className="flex justify-between items-center pb-2 border-b border-stone-border mb-3">
-            <div>
-              <h3 className="font-barlow font-bold text-base text-slate-100 uppercase tracking-wider flex items-center gap-2">
-                <Activity className="w-4 h-4 text-tactical-green" />
-                COMMS CENTER
-              </h3>
-              <span className="text-[9px] text-bronze-gold uppercase block">NOTIFICATIONS & SYSTEM ALERTS</span>
-            </div>
-            <span className="px-2 py-0.5 rounded bg-[#07110d] border border-stone-border text-[9px] text-slate-300">
+        <div className="lg:col-span-5 black-glass rounded-lg p-4">
+          <div className="flex justify-between items-center pb-2 border-b border-stone-border mb-2">
+            <h3 className="font-barlow font-bold text-sm text-slate-100 uppercase tracking-wider flex items-center gap-2">
+              <Activity className="w-4 h-4 text-tactical-green" />
+              COMMS CENTER
+            </h3>
+            <span className="text-[9px] text-slate-300 bg-[#07110d] px-2 py-0.5 rounded border border-stone-border">
               {activeFeed.filter((n) => !n.read).length} UNREAD
             </span>
           </div>
-
-          <div className="space-y-1.5 max-h-[160px] overflow-y-auto pr-1">
-            {activeFeed.map((item) => (
-              <div
-                key={item.id}
-                className={`p-2 rounded border text-[10px] flex justify-between items-center ${
-                  item.read ? 'bg-[#07110d]/50 border-stone-border/40 opacity-70' : 'bg-[#07110d] border-stone-border'
-                }`}
-              >
-                <div className="flex items-center gap-2 truncate max-w-[200px]">
-                  {!item.read && <CheckCircle2 className="w-3 h-3 text-tactical-green flex-shrink-0" />}
-                  <span className="text-slate-200 truncate">{item.title}</span>
+          <div className="space-y-1 max-h-[120px] overflow-y-auto pr-1">
+            {activeFeed.slice(0, 4).map((item) => {
+              const feedBg = item.read ? 'bg-[#07110d]/50 border-stone-border/40 opacity-70' : 'bg-[#07110d] border-stone-border';
+              return (
+                <div
+                  key={item.id}
+                  className={`p-1.5 rounded border text-[9px] flex justify-between items-center ${feedBg}`}
+                >
+                  <div className="flex items-center gap-1.5 truncate max-w-[220px]">
+                    {!item.read && <CheckCircle2 className="w-3 h-3 text-tactical-green flex-shrink-0" />}
+                    <span className="text-slate-200 truncate">{item.title}</span>
+                  </div>
+                  <span className="text-bronze-gold text-[8px] flex-shrink-0">{item.time}</span>
                 </div>
-                <span className="text-bronze-gold text-[8px] flex-shrink-0">{item.time}</span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
 
-      {/* Lyra AI Assistant Floating Panel */}
       <LyraAssistant
         isOpen={lyraOpen}
         onClose={() => setLyraOpen(false)}
@@ -1388,28 +1373,4 @@ export default function Headquarters({ onNavigate, notifications, showToast }) {
       />
     </div>
   );
-}$ npm run verify
-
-> tactical-atlas-os@4.0.0 verify
-> npm run lint && npm run format:check && npm run build
-
-> tactical-atlas-os@4.0.0 lint
-> eslint . --ext js,jsx --max-warnings 0
-
-✔ 0 errors, 0 warnings
-
-> tactical-atlas-os@4.0.0 format:check
-> prettier --check .
-Checking formatting...
-All matched files use Prettier code style!
-
-> tactical-atlas-os@4.0.0 build
-> vite build
-vite v5.1.6 building for production...
-transforming...
-✓ 96 modules transformed.
-rendering chunks...
-dist/index.html                   2.14 kB │ gzip:  0.89 kB
-dist/assets/index-Bf9Kx_W3.css   19.45 kB │ gzip:  3.98 kB
-dist/assets/index-Dwz8q7LP.js   263.84 kB │ gzip: 75.60 kB
-✓ built in 1.56s
+}

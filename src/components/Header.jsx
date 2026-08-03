@@ -41,13 +41,13 @@ export default function Header({ onToggleMobileMenu, onOpenNotifications, unread
   }, []);
 
   return (
-    <header className="h-16 bg-stone-panel border-b border-stone-border px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 shadow-md">
+    <header className="h-16 bg-[#07110d]/95 backdrop-blur-md border-b border-tactical-green/35 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 shadow-[0_0_30px_rgba(16,185,129,0.12)]">
       <div className="flex items-center gap-3 sm:gap-4">
         <button
           type="button"
           onClick={onToggleMobileMenu}
           aria-label="Open Mobile Menu"
-          className="p-2 rounded bg-stone-bg border border-stone-border text-slate-300 hover:text-white lg:hidden focus:outline-none focus:ring-2 focus:ring-bronze-gold"
+          className="p-2 rounded bg-[#07110d] border border-bronze-gold/50 text-slate-300 hover:text-white lg:hidden focus:outline-none focus:ring-2 focus:ring-bronze-gold shadow-bronze"
         >
           <Menu className="w-5 h-5 text-bronze-gold" />
         </button>
@@ -56,7 +56,7 @@ export default function Header({ onToggleMobileMenu, onOpenNotifications, unread
           <span className="font-mono text-[9px] text-slate-400 tracking-widest block uppercase">
             WELCOME BACK,
           </span>
-          <h2 className="font-serif font-bold text-xs sm:text-sm text-slate-100 tracking-wider uppercase leading-none">
+          <h2 className="font-serif font-bold text-xs sm:text-sm text-slate-100 tracking-wider uppercase leading-none text-glow-bronze">
             {SYSTEM_STATUS.userName}
           </h2>
           <span className="font-mono text-[9px] text-bronze-gold tracking-widest hidden sm:block uppercase mt-0.5">
@@ -64,7 +64,7 @@ export default function Header({ onToggleMobileMenu, onOpenNotifications, unread
           </span>
         </div>
 
-        <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-stone-bg border border-stone-border rounded font-mono text-xs">
+        <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-[#07110d] border border-tactical-green/30 rounded font-mono text-xs shadow-[inset_0_0_0_1px_rgba(16,185,129,0.08)]">
           <Clock className="w-3.5 h-3.5 text-bronze-gold flex-shrink-0" />
           <div className="flex flex-col">
             <span className="text-bronze-gold font-bold leading-none">{clockText.time}</span>
@@ -80,7 +80,7 @@ export default function Header({ onToggleMobileMenu, onOpenNotifications, unread
             type="text"
             placeholder="SEARCH INTEL, CASES..."
             aria-label="Search Intel and Cases"
-            className="w-48 lg:w-64 pl-8 pr-3 py-1.5 bg-stone-bg border border-stone-border rounded text-xs font-mono text-slate-200 placeholder-slate-500 focus:outline-none focus:border-bronze-gold focus:ring-1 focus:ring-bronze-gold"
+            className="w-48 lg:w-64 pl-8 pr-3 py-1.5 bg-[#07110d] border border-tactical-green/30 rounded text-xs font-mono text-slate-200 placeholder-slate-500 focus:outline-none focus:border-bronze-gold focus:ring-1 focus:ring-bronze-gold"
           />
         </div>
 
@@ -88,7 +88,7 @@ export default function Header({ onToggleMobileMenu, onOpenNotifications, unread
           type="button"
           onClick={onOpenNotifications}
           aria-label="Open Notifications Drawer"
-          className="relative p-2 rounded bg-stone-bg border border-stone-border text-slate-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-bronze-gold"
+          className="relative p-2 rounded bg-[#07110d] border border-tactical-green/30 text-slate-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-bronze-gold shadow-tactical"
         >
           <Bell className="w-4 h-4 text-bronze-gold" />
           {unreadCount > 0 && (

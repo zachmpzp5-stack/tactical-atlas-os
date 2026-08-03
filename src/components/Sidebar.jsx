@@ -48,21 +48,21 @@ export default function Sidebar({ isMobileOpen, onClose }) {
       )}
 
       <aside
-        className={`fixed top-0 bottom-0 left-0 w-64 bg-stone-panel border-r border-stone-border z-50 flex flex-col justify-between transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+        className={`fixed top-0 bottom-0 left-0 w-64 bg-[#07110d]/95 backdrop-blur-md border-r border-tactical-green/40 z-50 flex flex-col justify-between transition-transform duration-300 ease-in-out lg:translate-x-0 ${
           isMobileOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div>
           <div className="p-4 border-b border-stone-border flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded border border-bronze-gold flex items-center justify-center bg-stone-bg shadow-bronze">
+              <div className="w-9 h-9 rounded border border-bronze-gold flex items-center justify-center bg-[#07110d] shadow-bronze">
                 <Compass
                   className="w-5 h-5 text-bronze-gold animate-spin"
                   style={{ animationDuration: '24s' }}
                 />
               </div>
               <div>
-                <h1 className="font-serif font-black text-xs tracking-wider text-slate-100 uppercase leading-none">
+                <h1 className="font-serif font-black text-xs tracking-wider text-slate-100 uppercase leading-none text-glow-green">
                   TACTICAL ATLAS
                 </h1>
                 <span className="font-mono text-[8px] text-bronze-gold tracking-widest block mt-0.5 uppercase">
@@ -92,7 +92,7 @@ export default function Sidebar({ isMobileOpen, onClose }) {
                     `flex items-center gap-3 px-3 py-2.5 rounded transition-all group tracking-wider uppercase ${
                       isActive
                         ? 'bg-tactical-dim/80 text-tactical-glow border-l-2 border-tactical-green shadow-tactical font-bold'
-                        : 'text-slate-400 hover:bg-stone-card hover:text-slate-200'
+                        : 'text-slate-400 hover:bg-stone-card/60 hover:text-slate-200 hover:border hover:border-bronze-gold/35'
                     }`
                   }
                 >
@@ -104,7 +104,7 @@ export default function Sidebar({ isMobileOpen, onClose }) {
           </nav>
         </div>
 
-        <div className="p-3 border-t border-stone-border bg-stone-bg/80">
+        <div className="p-3 border-t border-tactical-green/20 bg-[#07110d]/80">
           <p className="font-serif text-[9px] text-bronze-gold/90 italic leading-tight">
             "THE TRUTH IS OUT THERE. WE FIND IT. WE SHARE IT. WE REMEMBER."
           </p>

@@ -17,6 +17,9 @@ import AiProduction from './pages/AiProduction';
 import Analytics from './pages/Analytics';
 import SystemStatus from './pages/SystemStatus';
 import Settings from './pages/Settings';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
+import Terms from './pages/Terms';
 
 import { INTELLIGENCE_FEED } from './data/mockData';
 
@@ -54,10 +57,13 @@ function AppContent() {
   };
 
   return (
-    <div className="min-h-screen bg-stone-bg text-slate-200 flex font-sans bg-grid-pattern overflow-x-hidden">
+    <div className="min-h-screen bg-command-room text-slate-200 flex font-sans overflow-x-hidden relative">
+      <div className="pointer-events-none fixed inset-0 bg-moving-grid opacity-20" />
+      <div className="pointer-events-none fixed inset-0 scanline-overlay opacity-15" />
+
       <Sidebar isMobileOpen={mobileMenuOpen} onClose={handleCloseSidebar} />
 
-      <div className="flex-1 flex flex-col min-w-0 lg:pl-64">
+      <div className="flex-1 flex flex-col min-w-0 lg:pl-64 relative z-10">
         <Header
           onToggleMobileMenu={() => setMobileMenuOpen(!mobileMenuOpen)}
           onOpenNotifications={() => setNotificationsOpen(true)}
@@ -66,6 +72,9 @@ function AppContent() {
 
         <main className="flex-1 overflow-y-auto">
           <Routes>
+            <Route path="/login" element={<Login showToast={showToast} onNavigate={navigate} />} />
+            <Route path="/signup" element={<Signup showToast={showToast} onNavigate={navigate} />} />
+            <Route path="/terms" element={<Terms onNavigate={navigate} />} />
             <Route
               path="/"
               element={
