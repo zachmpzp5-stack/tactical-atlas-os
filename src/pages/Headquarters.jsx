@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import ExpeditionMap from '../components/ExpeditionMap';
 import ProductionPipeline from '../components/ProductionPipeline';
 import SafeImage from '../components/SafeImage';
+import LyraAssistantPanel from '../components/LyraAssistantPanel';
 import { LIBRARY_COLLECTIONS, CASE_FILES_EXPANDED, ARCHIVES_COLLECTION } from '../data/mockData';
 import { Video, Mic, Plus } from 'lucide-react';
 
@@ -236,60 +237,7 @@ export default function Headquarters({ onNavigate, notifications, showToast }) {
           </button>
         </div>
 
-        <div className="lg:col-span-3 bg-stone-panel border border-stone-border rounded-lg p-3 flex flex-col justify-between h-[360px]">
-          <div>
-            <div className="pb-2 border-b border-stone-border mb-2">
-              <h3 className="font-serif font-bold text-xs text-slate-100 uppercase">
-                TODAY'S MISSION
-              </h3>
-              <span className="font-mono text-[8px] text-bronze-gold uppercase block">
-                PRIMARY OBJECTIVE
-              </span>
-            </div>
-
-            <div className="relative rounded overflow-hidden mb-2 h-28 bg-stone-bg border border-stone-border">
-              <SafeImage
-                src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=400&q=80"
-                alt="El Dorado"
-                className="w-full h-full object-cover opacity-60"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-stone-panel via-transparent to-transparent"></div>
-              <div className="absolute bottom-2 left-2">
-                <span className="font-serif font-bold text-xs text-slate-100 block">EL DORADO</span>
-                <span className="font-mono text-[8px] text-bronze-gold block">
-                  THE CITY OF GOLD
-                </span>
-              </div>
-            </div>
-
-            <div className="bg-stone-bg p-2 rounded border border-stone-border font-mono text-[9px] space-y-1">
-              <div className="flex justify-between text-slate-400">
-                <span>EPISODE:</span>
-                <span className="text-slate-200">03</span>
-              </div>
-              <div className="flex justify-between text-slate-400">
-                <span>RESEARCH:</span>
-                <span className="text-tactical-glow">92%</span>
-              </div>
-              <div className="flex justify-between text-slate-400">
-                <span>NARRATION:</span>
-                <span className="text-tactical-glow">CHARLIE</span>
-              </div>
-              <div className="flex justify-between text-slate-400">
-                <span>PUBLISH:</span>
-                <span className="text-bronze-gold">TOMORROW</span>
-              </div>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => onNavigate('/cases', 'CASE-001')}
-            className="w-full py-1.5 bg-bronze-gold/20 hover:bg-bronze-gold/30 border border-bronze-gold text-xs font-mono font-bold text-bronze-light rounded uppercase"
-          >
-            OPEN CASE FILE
-          </button>
-        </div>
+        <LyraAssistantPanel />
       </div>
 
       {/* Quick Actions & Pipeline */}
