@@ -33,14 +33,9 @@ export default function LyraAssistantPanel() {
   const [voiceEnabled, setVoiceEnabled] = useState(
     () => localStorage.getItem('ta-lyra-voice') !== 'off'
   );
-  const [clearance, setClearance] = useState(() => localStorage.getItem('ta_clearance') || 'OMEGA');
+  const [clearance, setClearance] = useState('STANDARD');
+  const [isCommanderVerified, setIsCommanderVerified] = useState(false);
 
-  useEffect(() => {
-    const syncClearance = (event) =>
-      setClearance(event.detail || localStorage.getItem('ta_clearance') || 'OPERATOR');
-    window.addEventListener('ta:clearance-change', syncClearance);
-    return () => window.removeEventListener('ta:clearance-change', syncClearance);
-  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -58,13 +53,15 @@ export default function LyraAssistantPanel() {
     setReply('LYRA is coordinating TAIM context and TAAN routing…');
 
     try {
-      const response = await fetch('/api/lyra', {
+      const response = await fetch('/api/lyra/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: cleanMessage }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data?.error || 'LYRA command channel unavailable.');
+      setClearance(data.clearance || 'STANDARD');
+      setIsCommanderVerified(Boolean(data.isCommander));
       const nextReply = data.reply || 'Command acknowledged.';
       setReply(nextReply);
       if (voiceEnabled) speakAsLyra(nextReply);
@@ -77,7 +74,7 @@ export default function LyraAssistantPanel() {
     }
   };
 
-  const isOmegaView = clearance === 'OMEGA';
+  const isOmegaView = isCommanderVerified && clearance === 'OMEGA';
 
   return (
     <section
@@ -192,3 +189,7 @@ export default function LyraAssistantPanel() {
     </section>
   );
 }
+
+
+
+
