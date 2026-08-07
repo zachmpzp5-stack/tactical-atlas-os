@@ -1,6 +1,7 @@
 import { determineLyraProfile } from '../../server/lyra/lyra.permissions.js';
 import { LYRA_PROMPTS } from '../../server/lyra/lyra.prompts.js';
 import { executeReadOnlyTool } from '../../server/lyra/lyra.tools.js';
+import { runAtlasCore } from '../../server/atlas-core/atlas.core.js';
 
 const MAX_MESSAGE_LENGTH = 2000;
 const MAX_HISTORY = 10;
@@ -89,6 +90,12 @@ export default async function handler(req, res) {
       );
     }
 
+    const atlasDecision = runAtlasCore({
+      message,
+      identity,
+      toolData
+    });
+
     const systemPrompt =
       LYRA_PROMPTS[identity.profile] ||
       LYRA_PROMPTS.LYRA_STANDARD;
@@ -116,6 +123,13 @@ export default async function handler(req, res) {
       {
         role: 'system',
         content: systemPrompt
+      },
+      {
+        role: 'system',
+        content:
+          'ATLAS CORE ROUTING DECISION:\n' +
+          JSON.stringify(atlasDecision, null, 2) +
+          '\nFollow this routing decision. Never exceed its clearance or execution mode.'
       },
       ...history
     ];
