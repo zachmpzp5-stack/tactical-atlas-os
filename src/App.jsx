@@ -5,6 +5,7 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import NotificationPanel from './components/NotificationPanel';
 import Toast from './components/Toast';
+import BootSequence from './components/BootSequence';
 
 import Headquarters from './pages/Headquarters';
 import Operations from './pages/Operations';
@@ -123,7 +124,9 @@ function AppContent() {
 export default function App() {
   return (
     <Router>
-      <AppContent />
+      <BootSequence>
+        <AppContent />
+      </BootSequence>
     </Router>
   );
 }
