@@ -20,18 +20,19 @@ function speakAsLyra(text) {
     };
     return;
   }
+const preferredNames = [
+  'Microsoft Ava Online',
+  'Microsoft Aria Online',
+  'Microsoft Jenny Online',
+  'Ava',
+  'Aria',
+  'Jenny',
+  'Samantha',
+  'Victoria',
+  'Zira'
+];
 
-  const preferredNames = [
-    'Microsoft Aria Online',
-    'Microsoft Jenny Online',
-    'Microsoft Ava Online',
-    'Aria',
-    'Jenny',
-    'Ava',
-    'Samantha',
-    'Victoria',
-    'Zira'
-  ];
+  
 
   const selectedVoice =
     preferredNames
@@ -52,10 +53,9 @@ function speakAsLyra(text) {
   if (selectedVoice) {
     utterance.voice = selectedVoice;
   }
-
-  utterance.rate = 0.91;
-  utterance.pitch = 0.96;
-  utterance.volume = 0.9;
+utterance.rate = 0.89;
+utterance.pitch = 0.98;
+utterance.volume = 0.94;
 
   window.speechSynthesis.speak(utterance);
 }
