@@ -6,22 +6,60 @@ const quickActions = [
   'Review the approval queue and identify risks.',
   'Route the highest-priority task through TAAN.',
 ];
-
 function speakAsLyra(text) {
   if (!('speechSynthesis' in window)) return;
+
   window.speechSynthesis.cancel();
-  const utterance = new SpeechSynthesisUtterance(text);
+
   const voices = window.speechSynthesis.getVoices();
-  const preferredNames = ['Aria', 'Jenny', 'Ava', 'Samantha', 'Victoria', 'Zira', 'Susan'];
-  utterance.voice =
-    preferredNames.map((name) => voices.find((voice) => voice.name.includes(name))).find(Boolean) ||
-    voices.find((voice) => voice.lang?.startsWith('en')) ||
-    null;
-  utterance.rate = 0.94;
-  utterance.pitch = 1.03;
-  utterance.volume = 0.88;
+
+  if (!voices.length) {
+    window.speechSynthesis.onvoiceschanged = () => {
+      window.speechSynthesis.onvoiceschanged = null;
+      speakAsLyra(text);
+    };
+    return;
+  }
+
+  const preferredNames = [
+    'Microsoft Aria Online',
+    'Microsoft Jenny Online',
+    'Microsoft Ava Online',
+    'Aria',
+    'Jenny',
+    'Ava',
+    'Samantha',
+    'Victoria',
+    'Zira'
+  ];
+
+  const selectedVoice =
+    preferredNames
+      .map((name) =>
+        voices.find((voice) =>
+          voice.name.toLowerCase().includes(name.toLowerCase())
+        )
+      )
+      .find(Boolean) ||
+    voices.find(
+      (voice) =>
+        voice.lang?.startsWith('en') &&
+        /female|aria|jenny|ava|zira/i.test(voice.name)
+    );
+
+  const utterance = new SpeechSynthesisUtterance(text);
+
+  if (selectedVoice) {
+    utterance.voice = selectedVoice;
+  }
+
+  utterance.rate = 0.91;
+  utterance.pitch = 0.96;
+  utterance.volume = 0.9;
+
   window.speechSynthesis.speak(utterance);
 }
+
 
 export default function LyraAssistantPanel() {
   const [query, setQuery] = useState('Brief me on current Tactical Atlas readiness.');
