@@ -69,20 +69,21 @@
   }
 
   .boot-screen {
-  position: fixed;
-  inset: 0;
-  width: 100vw;
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  background:
-    radial-gradient(circle at center, rgba(16, 185, 129, 0.14), transparent 38%),
-    linear-gradient(135deg, rgba(5, 10, 8, 0.98), rgba(0, 0, 0, 0.98));
-}
-
-  
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right))
+      max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+    background:
+      radial-gradient(circle at center, rgba(16, 185, 129, 0.13), transparent 44%),
+      linear-gradient(135deg, #06110d, #010504 70%);
+  }
 
   .boot-screen::before {
     content: '';
@@ -104,7 +105,52 @@
         transparent 4px
       );
     pointer-events: none;
-    opacity: 0.65;
+    opacity: 0.42;
+  }
+
+  .boot-screen::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, transparent 54%, rgba(0, 0, 0, 0.74) 100%);
+    pointer-events: none;
+  }
+
+  .boot-screen > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .boot-identity,
+  .boot-sequence-frame {
+    display: flex;
+    width: min(92vw, 38rem);
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    text-align: center;
+  }
+
+  .boot-brand-art {
+    display: block;
+    width: min(82vw, 34rem);
+    max-height: min(68vh, 34rem);
+    object-fit: contain;
+    filter: drop-shadow(0 0 28px rgba(200, 155, 60, 0.16));
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+
+  .boot-brand-art-active {
+    width: min(72vw, 27rem);
+    max-height: min(56vh, 27rem);
+  }
+
+  .boot-version {
+    color: rgba(148, 163, 184, 0.72);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(0.56rem, 1.8vw, 0.68rem);
+    letter-spacing: 0.16em;
   }
 
   .boot-sequence-frame {
@@ -113,6 +159,12 @@
 
   .boot-status-line {
     position: relative;
+    min-height: 1.25rem;
+    color: #d6aa53;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(0.64rem, 2.2vw, 0.78rem);
+    letter-spacing: 0.12em;
+    line-height: 1.35;
     padding-left: 14px;
   }
 
@@ -132,9 +184,20 @@
 
   .boot-progress-fill {
     width: 78%;
+    height: 100%;
+    border-radius: inherit;
     background: linear-gradient(90deg, #10b981, #34d399, #eab308);
     box-shadow: 0 0 25px rgba(16, 185, 129, 0.8);
     animation: bootProgress 2.2s ease-in-out infinite;
+  }
+
+  .boot-progress-track {
+    width: min(72vw, 22rem);
+    height: 0.2rem;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(30, 41, 35, 0.88);
+    box-shadow: inset 0 0 0 1px rgba(200, 155, 60, 0.16);
   }
 
   .flat-earth-ring {
@@ -560,18 +623,160 @@
   background: #c89b3c;
 }
 .boot-start-button {
-  padding: 16px 28px;
-  border: 1px solid #34d399;
-  background: rgba(3, 18, 13, 0.92);
-  color: #34d399;
-  font-family: monospace;
-  font-size: 16px;
+  min-height: 3rem;
+  padding: 0.8rem 1.55rem;
+  border: 1px solid rgba(214, 170, 83, 0.82);
+  border-radius: 0.2rem;
+  background: rgba(3, 18, 13, 0.94);
+  color: #e0b45e;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(0.72rem, 2.6vw, 0.9rem);
   letter-spacing: 0.18em;
   cursor: pointer;
-  box-shadow: 0 0 20px rgba(52, 211, 153, 0.25);
+  box-shadow:
+    0 0 24px rgba(200, 155, 60, 0.14),
+    inset 0 0 20px rgba(16, 185, 129, 0.05);
+  transition:
+    border-color 180ms ease,
+    background 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
 }
 
 .boot-start-button:hover {
-  background: rgba(16, 185, 129, 0.14);
-  box-shadow: 0 0 28px rgba(52, 211, 153, 0.4);
+  border-color: #f2ca73;
+  background: rgba(200, 155, 60, 0.1);
+  box-shadow: 0 0 30px rgba(200, 155, 60, 0.26);
+  transform: translateY(-1px);
+}
+
+.boot-start-button:focus-visible {
+  outline: 2px solid #6ee7b7;
+  outline-offset: 4px;
+}
+
+@media (max-height: 640px) {
+  .boot-brand-art {
+    max-height: 54vh;
+  }
+
+  .boot-brand-art-active {
+    max-height: 46vh;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .boot-sequence-frame,
+  .boot-status-line::before,
+  .boot-progress-fill {
+    animation: none;
+  }
+}
+
+.field-command-shell {
+  padding-top: max(0.75rem, env(safe-area-inset-top));
+  background:
+    radial-gradient(circle at 85% 0%, rgba(16, 185, 129, 0.12), transparent 34%),
+    linear-gradient(180deg, rgba(2, 10, 7, 0.15), rgba(2, 8, 6, 0.75));
+}
+
+.field-command-hero {
+  border: 1px solid rgba(52, 211, 153, 0.28);
+  border-radius: 0.75rem;
+  background:
+    linear-gradient(135deg, rgba(16, 185, 129, 0.1), transparent 48%), rgba(2, 10, 7, 0.94);
+  padding: 1rem;
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, 0.035),
+    0 20px 55px rgba(0, 0, 0, 0.38);
+}
+
+.field-command-touch {
+  min-height: 2.75rem;
+  min-width: 2.75rem;
+}
+
+.field-command-stat {
+  display: flex;
+  min-height: 6.75rem;
+  flex-direction: column;
+  justify-content: space-between;
+  border: 1px solid rgba(52, 211, 153, 0.16);
+  border-radius: 0.5rem;
+  background: rgba(0, 0, 0, 0.28);
+  padding: 0.75rem;
+}
+
+.field-command-stat strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: 'Rajdhani', 'Orbitron', sans-serif;
+  font-size: 0.9rem;
+  color: #f1f5f9;
+}
+
+.field-command-stat span {
+  font-size: 0.43rem;
+  letter-spacing: 0.15em;
+  color: #64748b;
+}
+
+.field-command-row {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  min-height: 5.5rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border: 1px solid rgba(52, 211, 153, 0.14);
+  border-radius: 0.5rem;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 0.75rem;
+  transition: 160ms ease;
+}
+
+.field-command-row:hover,
+.field-command-row:focus-visible {
+  border-color: rgba(52, 211, 153, 0.55);
+  background: rgba(16, 185, 129, 0.08);
+  outline: none;
+}
+
+.field-command-dock {
+  position: fixed;
+  right: 0.75rem;
+  bottom: max(0.75rem, env(safe-area-inset-bottom));
+  left: 0.75rem;
+  z-index: 35;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border: 1px solid rgba(52, 211, 153, 0.32);
+  border-radius: 0.75rem;
+  background: rgba(2, 10, 7, 0.94);
+  padding: 0.35rem;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(16px);
+}
+
+.field-command-dock button {
+  display: flex;
+  min-height: 3.25rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  border-radius: 0.5rem;
+  color: #6ee7b7;
+}
+
+.field-command-dock button:hover,
+.field-command-dock button:focus-visible {
+  background: rgba(16, 185, 129, 0.12);
+  outline: 1px solid rgba(52, 211, 153, 0.4);
+}
+
+.field-command-dock span {
+  font-size: 0.42rem;
+  letter-spacing: 0.12em;
 }

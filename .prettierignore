@@ -1,3 +1,7 @@
 node_modules
 dist
+build-pmo-*
+mobile-dist
+android
+ios
 package-lock.json

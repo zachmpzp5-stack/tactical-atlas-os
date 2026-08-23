@@ -3,6 +3,7 @@ import {
   COMMANDER_COOKIE,
   createCommanderSession
 } from '../../server/lyra/lyra.session.js';
+import { applySecurityHeaders, isJsonRequest, isSameOrigin } from '../../server/platform/security.js';
 
 function safeEqual(a, b) {
   if (!a || !b) return false;
@@ -16,13 +17,14 @@ function safeEqual(a, b) {
 }
 
 export default async function handler(req, res) {
-  res.setHeader('Cache-Control', 'no-store');
-  res.setHeader('X-Content-Type-Options', 'nosniff');
+  applySecurityHeaders(res);
 
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     return res.status(405).json({ error: 'Method not allowed.' });
   }
+  if (!isSameOrigin(req)) return res.status(403).json({ error: 'Cross-origin request denied.' });
+  if (!isJsonRequest(req)) return res.status(415).json({ error: 'JSON content type required.' });
 
   const configuredKey = process.env.COMMANDER_AUTH_KEY;
   const suppliedKey =
@@ -62,7 +64,8 @@ export default async function handler(req, res) {
     `${COMMANDER_COOKIE}=${session}`,
     'HttpOnly',
     'Path=/',
-    'SameSite=Strict',
+    // Lax keeps the signed session on top-level OAuth callback navigations.
+    'SameSite=Lax',
     'Max-Age=28800',
     secure ? 'Secure' : ''
   ]

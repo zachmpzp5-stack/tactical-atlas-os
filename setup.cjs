@@ -133,7 +133,7 @@ services:
     environment:
       PORT: 3001
       NODE_ENV: production
-      DATABASE_URL: postgresql://postgres:CHANGE_ME_POSTGRES_PASSWORD@database:5432/tactical_atlas
+      DATABASE_URL: \${DATABASE_URL}
       REDIS_URL: redis://redis:6379
       JWT_SECRET: CHANGE_ME_JWT_SECRET
     ports:
@@ -206,7 +206,7 @@ CMD ["node", "server/index.js"]
   '.env.example': `VITE_API_URL=http://localhost:3001
 PORT=3001
 NODE_ENV=development
-DATABASE_URL=postgresql://postgres:CHANGE_ME_POSTGRES_PASSWORD@localhost:5432/tactical_atlas
+DATABASE_URL=
 OPENAI_API_KEY=
 OPENAI_MODEL=gpt-4o
 ELEVENLABS_API_KEY=

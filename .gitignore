@@ -1,7 +1,14 @@
 node_modules/
+dist/
+build-pmo-*/
+mobile-dist/
+.vite/
+coverage/
+*.tsbuildinfo
 .env
 .env.*
 !.env.example
 .vercel/
+.data/
 *.log
 .DS_Store

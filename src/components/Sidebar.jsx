@@ -12,6 +12,7 @@ import {
   Cpu,
   Settings,
   Activity,
+  Smartphone,
   X,
 } from 'lucide-react';
 
@@ -23,8 +24,9 @@ export default function Sidebar({ isMobileOpen, onClose }) {
   }, [location.pathname, onClose]);
 
   const navItems = [
-    { name: 'HEADQUARTERS', path: '/', icon: LayoutDashboard },
+    { name: 'HEADQUARTERS', path: '/headquarters', icon: LayoutDashboard },
     { name: 'OPERATIONS', path: '/operations', icon: Compass },
+    { name: 'FIELD COMMAND', path: '/field-command', icon: Smartphone },
     { name: 'GRAND LIBRARY', path: '/library', icon: BookOpen },
     { name: 'ATLAS ARCHIVES', path: '/archives', icon: Archive },
     { name: 'MEDIA VAULT', path: '/vault', icon: Image },
@@ -55,10 +57,12 @@ export default function Sidebar({ isMobileOpen, onClose }) {
         <div>
           <div className="p-4 border-b border-stone-border flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded border border-bronze-gold flex items-center justify-center bg-[#07110d] shadow-bronze">
-                <Compass
-                  className="w-5 h-5 text-bronze-gold animate-spin"
-                  style={{ animationDuration: '24s' }}
+              <div className="w-9 h-9 overflow-hidden rounded border border-bronze-gold bg-[#020b08] shadow-bronze">
+                <img
+                  src="/assets/tactical-atlas-icon.png"
+                  alt=""
+                  aria-hidden="true"
+                  className="h-full w-full object-cover"
                 />
               </div>
               <div>

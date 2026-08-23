@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Bot, Radio, Send, ShieldCheck, Sparkles, Volume2, VolumeX } from 'lucide-react';
 
 const quickActions = [
@@ -62,6 +62,8 @@ utterance.volume = 0.94;
 
 
 export default function LyraAssistantPanel() {
+  const activeAudioRef = useRef(null);
+  const activeAudioUrlRef = useRef(null);
   const [query, setQuery] = useState('Brief me on current Tactical Atlas readiness.');
   const [reply, setReply] = useState(
     'Secure command channel initialized. Awaiting Commander input.'
@@ -73,13 +75,36 @@ export default function LyraAssistantPanel() {
   );
   const [clearance, setClearance] = useState('STANDARD');
   const [isCommanderVerified, setIsCommanderVerified] = useState(false);
+  const [intelligence, setIntelligence] = useState(null);
+
+  const stopVoice = () => {
+    window.speechSynthesis?.cancel();
+    activeAudioRef.current?.pause();
+    activeAudioRef.current = null;
+    if (activeAudioUrlRef.current) URL.revokeObjectURL(activeAudioUrlRef.current);
+    activeAudioUrlRef.current = null;
+  };
+
+  const playLyraVoice = async (text, commanderVerified) => {
+    stopVoice();
+    if (!commanderVerified) return speakAsLyra(text);
+    try {
+      const response = await fetch('/api/lyra/voice', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) });
+      if (!response.ok) throw new Error('neural_voice_unavailable');
+      const url = URL.createObjectURL(await response.blob());
+      const audio = new Audio(url);
+      activeAudioRef.current = audio; activeAudioUrlRef.current = url;
+      audio.onended = stopVoice; audio.onerror = () => { stopVoice(); speakAsLyra(text); };
+      await audio.play();
+    } catch { stopVoice(); speakAsLyra(text); }
+  };
 
 
   useEffect(() => {
     const controller = new AbortController();
     fetch('/api/health', { signal: controller.signal })
       .then((response) => (response.ok ? response.json() : Promise.reject(new Error('offline'))))
-      .then((data) => setLinkState(data.lyra === 'online' ? 'ONLINE' : 'READY'))
+      .then((data) => setLinkState(data.components?.LYRA?.status || 'UNVERIFIED'))
       .catch(() => setLinkState('PREVIEW'));
     return () => controller.abort();
   }, []);
@@ -102,7 +127,8 @@ export default function LyraAssistantPanel() {
       setIsCommanderVerified(Boolean(data.isCommander));
       const nextReply = data.reply || 'Command acknowledged.';
       setReply(nextReply);
-      if (voiceEnabled) speakAsLyra(nextReply);
+      setIntelligence(data.intelligence || null);
+      if (voiceEnabled) await playLyraVoice(nextReply, Boolean(data.isCommander));
       setLinkState('ONLINE');
     } catch (error) {
       setReply(error.message || 'LYRA command channel unavailable.');
@@ -134,7 +160,7 @@ export default function LyraAssistantPanel() {
               setVoiceEnabled(nextState);
               localStorage.setItem('ta-lyra-voice', nextState ? 'on' : 'off');
               if (nextState) speakAsLyra('Voice link online. I am here, Commander.');
-              else window.speechSynthesis?.cancel();
+              else stopVoice();
             }}
             className="status-chip status-chip-gold flex items-center gap-1"
             aria-pressed={voiceEnabled}
@@ -185,6 +211,16 @@ export default function LyraAssistantPanel() {
           {reply}
         </p>
       </div>
+
+      {intelligence && (
+        <div className="mb-3 grid grid-cols-2 gap-2 font-mono text-[8px]">
+          <div className="rounded border border-emerald-400/15 bg-black/25 p-2">VERIFIED FACTS <b className="float-right text-emerald-300">{intelligence.verifiedFacts?.length || 0}</b></div>
+          <div className="rounded border border-emerald-400/15 bg-black/25 p-2">REMEMBERED <b className="float-right text-emerald-300">{intelligence.rememberedFacts?.length || 0}</b></div>
+          <div className="rounded border border-amber-400/15 bg-black/25 p-2">UNAVAILABLE <b className="float-right text-amber-300">{intelligence.unavailable?.length || 0}</b></div>
+          <div className="rounded border border-amber-400/15 bg-black/25 p-2">PROPOSALS <b className="float-right text-amber-300">{intelligence.proposedActions?.length || 0}</b></div>
+          {(intelligence.evidenceReferences?.length || 0) > 0 && <p className="col-span-2 max-h-16 overflow-y-auto text-slate-500">EVIDENCE {intelligence.evidenceReferences.map((reference) => `${reference.memoryId || 'TOOL'}:${reference.verificationStatus || 'VERIFIED'}:${reference.stale ? 'STALE' : 'FRESH'}`).join(' // ')}</p>}
+        </div>
+      )}
 
       <div className="mb-3 grid grid-cols-3 gap-2">
         {quickActions.map((action, index) => (

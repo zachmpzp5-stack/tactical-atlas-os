@@ -7,12 +7,32 @@
       "headers": {
         "X-Content-Type-Options": "nosniff",
         "X-Frame-Options": "DENY",
+        "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+        "Cross-Origin-Opener-Policy": "same-origin",
+        "Cross-Origin-Resource-Policy": "same-origin",
         "Referrer-Policy": "strict-origin-when-cross-origin",
         "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
-        "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' https: data:; connect-src 'self' https://ai-gateway.vercel.sh; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests"
+        "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' https: data:; connect-src 'self' https://ai-gateway.vercel.sh https://api.elevenlabs.io; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests"
       },
       "continue": true
     },
+    { "src": "/api/accounts/(twitch|youtube|tiktok|discord|microsoft|x|linkedin|facebook|instagram|steam)/callback", "dest": "/api/accounts?route=callback&provider=$1" },
+    { "src": "/api/accounts/(start|status|disconnect)", "dest": "/api/accounts?route=$1" },
+    { "src": "/api/missions", "dest": "/api/command?route=missions" },
+    { "src": "/api/missions/([^/]+)/transition", "dest": "/api/command?route=mission-transition&missionId=$1" },
+    { "src": "/api/missions/([^/]+)/objectives", "dest": "/api/command?route=mission-objectives&missionId=$1" },
+    { "src": "/api/missions/([^/]+)/evidence", "dest": "/api/command?route=mission-evidence&missionId=$1" },
+    { "src": "/api/missions/([^/]+)", "dest": "/api/command?route=mission-detail&missionId=$1" },
+    { "src": "/api/tain/search", "dest": "/api/command?route=tain-search" },
+    { "src": "/api/memory/candidates/([^/]+)/decision", "dest": "/api/command?route=memory-candidate-decision&candidateId=$1" },
+    { "src": "/api/memory/candidates", "dest": "/api/command?route=memory-candidates" },
+    { "src": "/api/memory/conflicts", "dest": "/api/command?route=memory-conflicts" },
+    { "src": "/api/memory/([^/]+)", "dest": "/api/command?route=memory-action&memoryId=$1" },
+    { "src": "/api/proposals/([^/]+)/decision", "dest": "/api/command?route=proposal-decision&actionId=$1" },
+    { "src": "/api/proposals", "dest": "/api/command?route=proposals" },
+    { "src": "/api/integrations/sync", "dest": "/api/command?route=integration-sync" },
+    { "src": "/api/integrations/sync-history", "dest": "/api/command?route=integration-sync-history" },
+    { "src": "/api/integrations/records", "dest": "/api/command?route=integration-records" },
     { "handle": "filesystem" },
     { "src": "/.*", "dest": "/index.html" }
   ]

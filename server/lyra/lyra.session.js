@@ -64,3 +64,18 @@ export function verifyCommanderSession(token) {
     return false;
   }
 }
+
+export function readCommanderSession(req) {
+  const cookieHeader = String(req?.headers?.cookie || '');
+  const token = cookieHeader
+    .split(';')
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(`${COMMANDER_COOKIE}=`))
+    ?.slice(COMMANDER_COOKIE.length + 1);
+
+  if (!verifyCommanderSession(token)) return null;
+  return {
+    token,
+    binding: crypto.createHash('sha256').update(token).digest('base64url')
+  };
+}

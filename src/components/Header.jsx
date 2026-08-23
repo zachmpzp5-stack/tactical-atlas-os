@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Bell, Search, Menu, Clock } from 'lucide-react';
 import { SYSTEM_STATUS } from '../data/mockData';
+import InstallAppButton from './InstallAppButton';
 
 export default function Header({ onToggleMobileMenu, onOpenNotifications, unreadCount }) {
   const [clockText, setClockText] = useState({ time: '00:00:00 UTC', date: '01 JAN 2026' });
@@ -98,6 +99,8 @@ export default function Header({ onToggleMobileMenu, onOpenNotifications, unread
           />
         </div>
 
+        <InstallAppButton />
+
         <button
           type="button"
           onClick={onOpenNotifications}
@@ -113,9 +116,12 @@ export default function Header({ onToggleMobileMenu, onOpenNotifications, unread
         </button>
 
         <div className="flex items-center gap-2 px-2.5 py-1 bg-stone-bg border border-bronze-gold/40 rounded font-mono text-xs">
-          <span className="w-5 h-5 rounded bg-bronze-gold/20 text-bronze-gold flex items-center justify-center font-bold text-[10px]">
-            TA
-          </span>
+          <img
+            src="/assets/tactical-atlas-icon.png"
+            alt=""
+            aria-hidden="true"
+            className="h-5 w-5 rounded border border-bronze-gold/40 object-cover"
+          />
           <span className="text-bronze-gold text-[10px] font-bold hidden sm:inline">
             CLEARANCE: {operator.clearance}
           </span>

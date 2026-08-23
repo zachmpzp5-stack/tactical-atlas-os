@@ -1,0 +1,9 @@
+{
+  "appId": "com.tacticalatlas.fieldcommand",
+  "appName": "Tactical ATLAS Field Command",
+  "webDir": "mobile-dist",
+  "loggingBehavior": "debug",
+  "server": {
+    "androidScheme": "https"
+  }
+}

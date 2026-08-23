@@ -1,4 +1,5 @@
-import React, { useState, useCallback } from 'react';
+import React, { lazy, Suspense, useState, useCallback } from 'react';
+import { Capacitor } from '@capacitor/core';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
@@ -7,20 +8,21 @@ import NotificationPanel from './components/NotificationPanel';
 import Toast from './components/Toast';
 import BootSequence from './components/BootSequence';
 
-import Headquarters from './pages/Headquarters';
-import Operations from './pages/Operations';
-import GrandLibrary from './pages/GrandLibrary';
-import AtlasArchives from './pages/AtlasArchives';
-import MediaVault from './pages/MediaVault';
-import ResearchNetwork from './pages/ResearchNetwork';
-import CaseFiles from './pages/CaseFiles';
-import AiProduction from './pages/AiProduction';
-import Analytics from './pages/Analytics';
-import SystemStatus from './pages/SystemStatus';
-import Settings from './pages/Settings';
-import Login from './pages/Login';
-import Signup from './pages/Signup';
-import Terms from './pages/Terms';
+const Headquarters = lazy(() => import('./pages/Headquarters'));
+const Operations = lazy(() => import('./pages/Operations'));
+const GrandLibrary = lazy(() => import('./pages/GrandLibrary'));
+const AtlasArchives = lazy(() => import('./pages/AtlasArchives'));
+const MediaVault = lazy(() => import('./pages/MediaVault'));
+const ResearchNetwork = lazy(() => import('./pages/ResearchNetwork'));
+const CaseFiles = lazy(() => import('./pages/CaseFiles'));
+const AiProduction = lazy(() => import('./pages/AiProduction'));
+const Analytics = lazy(() => import('./pages/Analytics'));
+const SystemStatus = lazy(() => import('./pages/SystemStatus'));
+const Settings = lazy(() => import('./pages/Settings'));
+const Login = lazy(() => import('./pages/Login'));
+const Signup = lazy(() => import('./pages/Signup'));
+const Terms = lazy(() => import('./pages/Terms'));
+const FieldCommand = lazy(() => import('./pages/FieldCommand'));
 
 import { INTELLIGENCE_FEED } from './data/mockData';
 
@@ -72,38 +74,62 @@ function AppContent() {
         />
 
         <main className="flex-1 overflow-y-auto">
-          <Routes>
-            <Route path="/login" element={<Login showToast={showToast} onNavigate={navigate} />} />
-            <Route
-              path="/signup"
-              element={<Signup showToast={showToast} onNavigate={navigate} />}
-            />
-            <Route path="/terms" element={<Terms onNavigate={navigate} />} />
-            <Route
-              path="/"
-              element={
-                <Headquarters
-                  onNavigate={handleNavigateCase}
-                  notifications={notifications}
-                  showToast={showToast}
-                />
-              }
-            />
-            <Route path="/operations" element={<Operations showToast={showToast} />} />
-            <Route path="/library" element={<GrandLibrary showToast={showToast} />} />
-            <Route path="/archives" element={<AtlasArchives showToast={showToast} />} />
-            <Route path="/vault" element={<MediaVault showToast={showToast} />} />
-            <Route path="/research" element={<ResearchNetwork showToast={showToast} />} />
-            <Route
-              path="/cases"
-              element={<CaseFiles selectedId={selectedCaseId} showToast={showToast} />}
-            />
-            <Route path="/ai-studio" element={<AiProduction showToast={showToast} />} />
-            <Route path="/analytics" element={<Analytics showToast={showToast} />} />
-            <Route path="/status" element={<SystemStatus showToast={showToast} />} />
-            <Route path="/settings" element={<Settings showToast={showToast} />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+          <Suspense
+            fallback={
+              <div className="p-6 font-mono text-xs text-emerald-300">LOADING COMMAND MODULE…</div>
+            }
+          >
+            <Routes>
+              <Route
+                path="/login"
+                element={<Login showToast={showToast} onNavigate={navigate} />}
+              />
+              <Route
+                path="/signup"
+                element={<Signup showToast={showToast} onNavigate={navigate} />}
+              />
+              <Route path="/terms" element={<Terms onNavigate={navigate} />} />
+              <Route
+                path="/"
+                element={
+                  Capacitor.isNativePlatform() ? (
+                    <Navigate to="/field-command" replace />
+                  ) : (
+                    <Headquarters
+                      onNavigate={handleNavigateCase}
+                      notifications={notifications}
+                      showToast={showToast}
+                    />
+                  )
+                }
+              />
+              <Route
+                path="/headquarters"
+                element={
+                  <Headquarters
+                    onNavigate={handleNavigateCase}
+                    notifications={notifications}
+                    showToast={showToast}
+                  />
+                }
+              />
+              <Route path="/operations" element={<Operations showToast={showToast} />} />
+              <Route path="/field-command" element={<FieldCommand showToast={showToast} />} />
+              <Route path="/library" element={<GrandLibrary showToast={showToast} />} />
+              <Route path="/archives" element={<AtlasArchives showToast={showToast} />} />
+              <Route path="/vault" element={<MediaVault showToast={showToast} />} />
+              <Route path="/research" element={<ResearchNetwork showToast={showToast} />} />
+              <Route
+                path="/cases"
+                element={<CaseFiles selectedId={selectedCaseId} showToast={showToast} />}
+              />
+              <Route path="/ai-studio" element={<AiProduction showToast={showToast} />} />
+              <Route path="/analytics" element={<Analytics showToast={showToast} />} />
+              <Route path="/status" element={<SystemStatus showToast={showToast} />} />
+              <Route path="/settings" element={<Settings showToast={showToast} />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Suspense>
         </main>
 
         <Footer />
