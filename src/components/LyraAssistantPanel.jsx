@@ -1,5 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Bot, Radio, Send, ShieldCheck, Sparkles, Volume2, VolumeX } from 'lucide-react';
+import {
+  LYRA_BROWSER_VOICE_PROFILE,
+  prepareLyraSpeech,
+  selectLyraBrowserVoice,
+} from '../lib/lyra-voice';
 
 const quickActions = [
   'Summarize current mission readiness.',
@@ -20,46 +25,21 @@ function speakAsLyra(text) {
     };
     return;
   }
-const preferredNames = [
-  'Microsoft Ava Online',
-  'Microsoft Aria Online',
-  'Microsoft Jenny Online',
-  'Ava',
-  'Aria',
-  'Jenny',
-  'Samantha',
-  'Victoria',
-  'Zira'
-];
-
-  
-
-  const selectedVoice =
-    preferredNames
-      .map((name) =>
-        voices.find((voice) =>
-          voice.name.toLowerCase().includes(name.toLowerCase())
-        )
-      )
-      .find(Boolean) ||
-    voices.find(
-      (voice) =>
-        voice.lang?.startsWith('en') &&
-        /female|aria|jenny|ava|zira/i.test(voice.name)
-    );
-
-  const utterance = new SpeechSynthesisUtterance(text);
+  const selectedVoice = selectLyraBrowserVoice(voices);
+  const utterance = new SpeechSynthesisUtterance(prepareLyraSpeech(text));
 
   if (selectedVoice) {
     utterance.voice = selectedVoice;
+    utterance.lang = selectedVoice.lang;
+  } else {
+    utterance.lang = LYRA_BROWSER_VOICE_PROFILE.lang;
   }
-utterance.rate = 0.89;
-utterance.pitch = 0.98;
-utterance.volume = 0.94;
+  utterance.rate = LYRA_BROWSER_VOICE_PROFILE.rate;
+  utterance.pitch = LYRA_BROWSER_VOICE_PROFILE.pitch;
+  utterance.volume = LYRA_BROWSER_VOICE_PROFILE.volume;
 
   window.speechSynthesis.speak(utterance);
 }
-
 
 export default function LyraAssistantPanel() {
   const activeAudioRef = useRef(null);
@@ -89,16 +69,27 @@ export default function LyraAssistantPanel() {
     stopVoice();
     if (!commanderVerified) return speakAsLyra(text);
     try {
-      const response = await fetch('/api/lyra/voice', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) });
+      const response = await fetch('/api/lyra/voice', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text }),
+      });
       if (!response.ok) throw new Error('neural_voice_unavailable');
       const url = URL.createObjectURL(await response.blob());
       const audio = new Audio(url);
-      activeAudioRef.current = audio; activeAudioUrlRef.current = url;
-      audio.onended = stopVoice; audio.onerror = () => { stopVoice(); speakAsLyra(text); };
+      activeAudioRef.current = audio;
+      activeAudioUrlRef.current = url;
+      audio.onended = stopVoice;
+      audio.onerror = () => {
+        stopVoice();
+        speakAsLyra(text);
+      };
       await audio.play();
-    } catch { stopVoice(); speakAsLyra(text); }
+    } catch {
+      stopVoice();
+      speakAsLyra(text);
+    }
   };
-
 
   useEffect(() => {
     const controller = new AbortController();
@@ -167,7 +158,7 @@ export default function LyraAssistantPanel() {
             aria-label={voiceEnabled ? 'Disable LYRA voice' : 'Enable LYRA voice'}
           >
             {voiceEnabled ? <Volume2 className="h-3 w-3" /> : <VolumeX className="h-3 w-3" />}
-            VOICE {voiceEnabled ? 'ON' : 'OFF'}
+            LYRA VOICE {voiceEnabled ? 'ON' : 'OFF'}
           </button>
           <span
             className={`status-chip ${linkState === 'ONLINE' ? 'status-chip-green' : 'status-chip-gold'}`}
@@ -214,11 +205,39 @@ export default function LyraAssistantPanel() {
 
       {intelligence && (
         <div className="mb-3 grid grid-cols-2 gap-2 font-mono text-[8px]">
-          <div className="rounded border border-emerald-400/15 bg-black/25 p-2">VERIFIED FACTS <b className="float-right text-emerald-300">{intelligence.verifiedFacts?.length || 0}</b></div>
-          <div className="rounded border border-emerald-400/15 bg-black/25 p-2">REMEMBERED <b className="float-right text-emerald-300">{intelligence.rememberedFacts?.length || 0}</b></div>
-          <div className="rounded border border-amber-400/15 bg-black/25 p-2">UNAVAILABLE <b className="float-right text-amber-300">{intelligence.unavailable?.length || 0}</b></div>
-          <div className="rounded border border-amber-400/15 bg-black/25 p-2">PROPOSALS <b className="float-right text-amber-300">{intelligence.proposedActions?.length || 0}</b></div>
-          {(intelligence.evidenceReferences?.length || 0) > 0 && <p className="col-span-2 max-h-16 overflow-y-auto text-slate-500">EVIDENCE {intelligence.evidenceReferences.map((reference) => `${reference.memoryId || 'TOOL'}:${reference.verificationStatus || 'VERIFIED'}:${reference.stale ? 'STALE' : 'FRESH'}`).join(' // ')}</p>}
+          <div className="rounded border border-emerald-400/15 bg-black/25 p-2">
+            VERIFIED FACTS{' '}
+            <b className="float-right text-emerald-300">
+              {intelligence.verifiedFacts?.length || 0}
+            </b>
+          </div>
+          <div className="rounded border border-emerald-400/15 bg-black/25 p-2">
+            REMEMBERED{' '}
+            <b className="float-right text-emerald-300">
+              {intelligence.rememberedFacts?.length || 0}
+            </b>
+          </div>
+          <div className="rounded border border-amber-400/15 bg-black/25 p-2">
+            UNAVAILABLE{' '}
+            <b className="float-right text-amber-300">{intelligence.unavailable?.length || 0}</b>
+          </div>
+          <div className="rounded border border-amber-400/15 bg-black/25 p-2">
+            PROPOSALS{' '}
+            <b className="float-right text-amber-300">
+              {intelligence.proposedActions?.length || 0}
+            </b>
+          </div>
+          {(intelligence.evidenceReferences?.length || 0) > 0 && (
+            <p className="col-span-2 max-h-16 overflow-y-auto text-slate-500">
+              EVIDENCE{' '}
+              {intelligence.evidenceReferences
+                .map(
+                  (reference) =>
+                    `${reference.memoryId || 'TOOL'}:${reference.verificationStatus || 'VERIFIED'}:${reference.stale ? 'STALE' : 'FRESH'}`
+                )
+                .join(' // ')}
+            </p>
+          )}
         </div>
       )}
 
@@ -263,7 +282,3 @@ export default function LyraAssistantPanel() {
     </section>
   );
 }
-
-
-
-
