@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Shield, Search } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import SafeImage from '../components/SafeImage';
 import { CASE_FILES_EXPANDED } from '../data/mockData';
 
 export default function CaseFiles({ selectedId, showToast }) {
-  const [search, setSearch] = useState('');
+  const location = useLocation();
+  const requestedSearch = new URLSearchParams(location.search).get('search') || '';
+  const [search, setSearch] = useState(requestedSearch);
   const [stageFilter, setStageFilter] = useState('ALL');
   const [selectedCase, setSelectedCase] = useState(
     () => CASE_FILES_EXPANDED.find((c) => c.id === selectedId) || CASE_FILES_EXPANDED[0]
@@ -16,6 +19,10 @@ export default function CaseFiles({ selectedId, showToast }) {
       if (found) setSelectedCase(found);
     }
   }, [selectedId]);
+
+  useEffect(() => {
+    setSearch(requestedSearch);
+  }, [requestedSearch]);
 
   const stages = [
     'ALL',
@@ -118,6 +125,13 @@ export default function CaseFiles({ selectedId, showToast }) {
                   <td className="p-2 text-amber-500">{item.priority}</td>
                 </tr>
               ))}
+              {filtered.length === 0 && (
+                <tr>
+                  <td className="p-6 text-center text-slate-500" colSpan={5}>
+                    NO CASES MATCH “{search}”
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

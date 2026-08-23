@@ -1,9 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Bell, Search, Menu, Clock } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import { SYSTEM_STATUS } from '../data/mockData';
 import InstallAppButton from './InstallAppButton';
 
 export default function Header({ onToggleMobileMenu, onOpenNotifications, unreadCount }) {
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
+  const searchInputRef = useRef(null);
   const [clockText, setClockText] = useState({ time: '00:00:00 UTC', date: '01 JAN 2026' });
   const [operator, setOperator] = useState(() => ({
     name: localStorage.getItem('ta_operator_name') || SYSTEM_STATUS.userName,
@@ -44,6 +48,12 @@ export default function Header({ onToggleMobileMenu, onOpenNotifications, unread
     const interval = setInterval(updateTime, 1000);
     return () => clearInterval(interval);
   }, []);
+
+  const submitSearch = () => {
+    const query = (searchInputRef.current?.value || searchQuery).trim();
+    if (!query) return;
+    navigate(`/cases?search=${encodeURIComponent(query)}`);
+  };
 
   useEffect(() => {
     const syncOperator = () =>
@@ -89,15 +99,35 @@ export default function Header({ onToggleMobileMenu, onOpenNotifications, unread
       </div>
 
       <div className="flex items-center gap-2 sm:gap-3">
-        <div className="relative hidden md:block">
-          <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+        <form
+          className="relative hidden md:block"
+          role="search"
+          onSubmit={(event) => {
+            event.preventDefault();
+            submitSearch();
+          }}
+        >
+          <Link
+            to={
+              searchQuery.trim()
+                ? `/cases?search=${encodeURIComponent(searchQuery.trim())}`
+                : '/cases'
+            }
+            aria-label="Search cases"
+            className="absolute left-1 top-1/2 z-10 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded text-slate-400 hover:text-bronze-gold focus:outline-none focus:ring-1 focus:ring-bronze-gold"
+          >
+            <Search className="h-3.5 w-3.5" />
+          </Link>
           <input
+            ref={searchInputRef}
             type="text"
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
             placeholder="SEARCH INTEL, CASES..."
             aria-label="Search Intel and Cases"
             className="w-48 lg:w-64 pl-8 pr-3 py-1.5 bg-[#07110d] border border-tactical-green/30 rounded text-xs font-mono text-slate-200 placeholder-slate-500 focus:outline-none focus:border-bronze-gold focus:ring-1 focus:ring-bronze-gold"
           />
-        </div>
+        </form>
 
         <InstallAppButton />
 

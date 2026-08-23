@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useState, useCallback } from 'react';
+import React, { lazy, Suspense, useState, useCallback, useEffect, useRef } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
@@ -32,6 +32,7 @@ function AppContent() {
   const [selectedCaseId, setSelectedCaseId] = useState(null);
   const [notifications, setNotifications] = useState(INTELLIGENCE_FEED);
   const [toastMessage, setToastMessage] = useState(null);
+  const toastTimerRef = useRef(null);
 
   const navigate = useNavigate();
 
@@ -40,11 +41,19 @@ function AppContent() {
   }, []);
 
   const showToast = useCallback((msg) => {
+    if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
     setToastMessage(msg);
-    setTimeout(() => {
+    toastTimerRef.current = window.setTimeout(() => {
       setToastMessage((prev) => (prev === msg ? null : prev));
     }, 3000);
   }, []);
+
+  useEffect(
+    () => () => {
+      if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
+    },
+    []
+  );
 
   const handleMarkAllRead = () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));

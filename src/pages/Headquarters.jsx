@@ -15,6 +15,7 @@ import ProductionPipeline from '../components/ProductionPipeline';
 import SafeImage from '../components/SafeImage';
 import TaanNetwork from '../components/TaanNetwork';
 import { CASE_FILES_EXPANDED } from '../data/mockData';
+import { getGuardianReadiness } from '../lib/guardian-status';
 
 const bootSteps = [
   'ATLAS KERNEL',
@@ -121,18 +122,10 @@ function BootSequence() {
   );
 }
 
-const statusItems = [
-  ['DATABASE', 'CONFIG READY'],
-  ['ATLAS KERNEL', 'ONLINE'],
-  ['AI GATEWAY', 'SECURE'],
-  ['TAAN', '9 AGENTS'],
-  ['APPROVALS', '3 PENDING'],
-  ['GUARDIAN', 'ACTIVE'],
-];
-
 export default function Headquarters({ onNavigate, notifications }) {
   const mission = CASE_FILES_EXPANDED[0];
   const [agentStatuses, setAgentStatuses] = useState({});
+  const [systemSnapshot, setSystemSnapshot] = useState(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -140,8 +133,22 @@ export default function Headquarters({ onNavigate, notifications }) {
       .then((response) => (response.ok ? response.json() : Promise.reject(new Error('preview'))))
       .then((data) => setAgentStatuses(data.departments || {}))
       .catch(() => setAgentStatuses({}));
+    fetch('/api/health', { signal: controller.signal })
+      .then((response) => (response.ok ? response.json() : Promise.reject(new Error('health'))))
+      .then((data) => setSystemSnapshot(data))
+      .catch(() => setSystemSnapshot(null));
     return () => controller.abort();
   }, []);
+
+  const guardian = getGuardianReadiness(systemSnapshot);
+  const statusItems = [
+    ['DATABASE', systemSnapshot?.components?.MISSIONS?.status || 'CHECKING'],
+    ['ATLAS KERNEL', systemSnapshot?.components?.ATLAS_CORE?.status || 'CHECKING'],
+    ['AI GATEWAY', systemSnapshot?.components?.MODEL_PROVIDER?.status || 'CHECKING'],
+    ['TAAN', `${Object.keys(agentStatuses).length || 9} AGENTS`],
+    ['APPROVALS', systemSnapshot?.components?.APPROVAL_QUEUE?.status || 'CHECKING'],
+    ['GUARDIAN', guardian.status],
+  ];
 
   return (
     <div className="relative min-h-screen space-y-3 overflow-hidden bg-command-room p-3 sm:p-4">
@@ -157,7 +164,7 @@ export default function Headquarters({ onNavigate, notifications }) {
                 {label}
               </span>
               <span
-                className={`mt-1 block font-mono text-[9px] ${value.includes('PENDING') ? 'text-amber-300' : 'text-emerald-300'}`}
+                className={`mt-1 block font-mono text-[9px] ${value.includes('NOT_CONFIGURED') || value.includes('READ-ONLY') || value.includes('CHECKING') ? 'text-amber-300' : 'text-emerald-300'}`}
               >
                 {value}
               </span>
@@ -168,7 +175,10 @@ export default function Headquarters({ onNavigate, notifications }) {
 
       <div className="relative z-10 grid grid-cols-1 gap-3 xl:grid-cols-12">
         <div className="xl:col-span-8">
-          <ExpeditionMap onSelectCase={(caseId) => onNavigate('/cases', caseId)} />
+          <ExpeditionMap
+            onSelectCase={(caseId) => onNavigate('/cases', caseId)}
+            nodeStatuses={agentStatuses}
+          />
         </div>
         <section
           className="command-panel flex min-h-[360px] flex-col p-3 xl:col-span-4"
@@ -313,18 +323,28 @@ export default function Headquarters({ onNavigate, notifications }) {
           )}
         </section>
         <section className="command-panel p-3">
-          <h3 className="command-title">GUARDIAN PROTOCOL</h3>
-          <p className="command-kicker mb-3">Security + governance</p>
-          {[
-            'Founder authority enforced',
-            'Human approval gates active',
-            'Audit trail prepared',
-            'Rollback path available',
-          ].map((item) => (
-            <div key={item} className="feed-row mb-2">
-              <ShieldCheck className="h-3 w-3 text-emerald-300" />
-              <span>{item}</span>
-              <b className="ml-auto text-emerald-300">ON</b>
+          <div className="flex items-start justify-between gap-2">
+            <div>
+              <h3 className="command-title">GUARDIAN PROTOCOL</h3>
+              <p className="command-kicker mb-3">Security + governance</p>
+            </div>
+            <span
+              className={`status-chip ${guardian.fullyActive ? 'status-chip-green' : 'status-chip-gold'}`}
+            >
+              {guardian.status}
+            </span>
+          </div>
+          {guardian.checks.map((check) => (
+            <div key={check.label} className="feed-row mb-2">
+              <ShieldCheck
+                className={`h-3 w-3 ${check.ready ? 'text-emerald-300' : 'text-amber-300'}`}
+              />
+              <span>{check.label}</span>
+              <b
+                className={`ml-auto text-[7px] ${check.ready ? 'text-emerald-300' : 'text-amber-300'}`}
+              >
+                {check.value}
+              </b>
             </div>
           ))}
         </section>
