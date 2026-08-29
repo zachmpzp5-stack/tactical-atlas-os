@@ -35,7 +35,21 @@ test('mobile network labels distinguish wifi, cellular, generic online, and offl
   assert.equal(networkStatusLabel({ connected: false, connectionType: 'none' }), 'OFFLINE');
 });
 
-test('native network plugin configuration remains portable across Windows and macOS', async () => {
+test('native network plugin configuration remains portable across Windows and macOS', async (t) => {
+  const nativeProjectsExist = await Promise.all([
+    fs.access('ios/App/CapApp-SPM/Package.swift').then(
+      () => true,
+      () => false
+    ),
+    fs.access('android/capacitor.settings.gradle').then(
+      () => true,
+      () => false
+    ),
+  ]);
+  if (!nativeProjectsExist.every(Boolean)) {
+    t.skip('Native projects are generated on demand with the documented mobile:add scripts.');
+    return;
+  }
   const iosPackage = await fs.readFile('ios/App/CapApp-SPM/Package.swift', 'utf8');
   const androidSettings = await fs.readFile('android/capacitor.settings.gradle', 'utf8');
 

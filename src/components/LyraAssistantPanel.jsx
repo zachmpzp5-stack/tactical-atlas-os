@@ -5,6 +5,7 @@ import {
   prepareLyraSpeech,
   selectLyraBrowserVoice,
 } from '../lib/lyra-voice';
+import { loadLyraConversation, saveLyraExchange, sendLyraChat } from '../lib/lyra-client';
 
 const quickActions = [
   'Summarize current mission readiness.',
@@ -56,6 +57,7 @@ export default function LyraAssistantPanel() {
   const [clearance, setClearance] = useState('STANDARD');
   const [isCommanderVerified, setIsCommanderVerified] = useState(false);
   const [intelligence, setIntelligence] = useState(null);
+  const [conversation, setConversation] = useState(loadLyraConversation);
 
   const stopVoice = () => {
     window.speechSynthesis?.cancel();
@@ -107,17 +109,12 @@ export default function LyraAssistantPanel() {
     setReply('LYRA is coordinating TAIM context and TAAN routing…');
 
     try {
-      const response = await fetch('/api/lyra/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: cleanMessage }),
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data?.error || 'LYRA command channel unavailable.');
+      const data = await sendLyraChat({ message: cleanMessage, conversation });
       setClearance(data.clearance || 'STANDARD');
       setIsCommanderVerified(Boolean(data.isCommander));
       const nextReply = data.reply || 'Command acknowledged.';
       setReply(nextReply);
+      setConversation((current) => saveLyraExchange(current, cleanMessage, nextReply));
       setIntelligence(data.intelligence || null);
       if (voiceEnabled) await playLyraVoice(nextReply, Boolean(data.isCommander));
       setLinkState('ONLINE');

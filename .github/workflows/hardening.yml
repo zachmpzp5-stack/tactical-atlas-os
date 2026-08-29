@@ -1,0 +1,46 @@
+name: Hardening Gate
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - 'preview/**'
+      - 'hardening/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hardening-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  full-verification:
+    name: Full verification
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Run complete verification gate
+        run: npm run verify
+
+      - name: Reject URL parser deprecations in API paths
+        env:
+          NODE_OPTIONS: --throw-deprecation
+        run: node --test test/account-linking.test.js test/data-plane.test.js
+
+      - name: Build shared mobile bundle
+        run: npm run build:mobile
