@@ -46,10 +46,10 @@ function queryLimit(value, fallback = 50) {
 }
 
 function errorStatus(error) {
-  if (error.message === 'database_not_configured') return 503;
+  if (error.message === 'database_not_configured' || error.message === 'audit_integrity_verifier_unavailable') return 503;
   if (error.message.includes('not_found')) return 404;
   if (error.message.includes('authorization') || error.message.includes('self_approval')) return 403;
-  if (error.message.includes('already_decided') || error.message.includes('idempotency_conflict')) return 409;
+  if (error.message.includes('already_decided') || error.message.includes('idempotency_conflict') || error.message.includes('binding_mismatch')) return 409;
   if (error.message.includes('illegal_') || error.message.startsWith('invalid_') || error.message.includes('cannot_be_authoritative') || error.message.includes('not_permitted')) return 422;
   return 500;
 }

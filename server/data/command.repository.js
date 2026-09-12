@@ -28,6 +28,12 @@ function first(result) {
   return result[0] || null;
 }
 
+export function requireAuditIntegrityResult(result) {
+  if (!result || typeof result.valid !== 'boolean')
+    throw new Error('audit_integrity_verifier_unavailable');
+  return result;
+}
+
 export const commandRepository = Object.freeze({
   async listMissions({ limit = 50 } = {}) {
     return rows(`SELECT m.*,
@@ -311,12 +317,14 @@ export const commandRepository = Object.freeze({
   },
 
   async getAuditEvents({ limit = 1000 } = {}) {
-    return rows(`SELECT id,event_type,entity_type,entity_id,actor,action,payload,previous_hash,event_hash,created_at
+    return rows(`SELECT sequence,id,event_type,entity_type,entity_id,actor,action,payload,previous_hash,event_hash,created_at
       FROM security_audit_events ORDER BY sequence ASC LIMIT $1`, [limit]);
   },
 
   async verifyAuditIntegrity() {
-    return first(await rows('SELECT * FROM atlas_verify_audit_integrity()'));
+    return requireAuditIntegrityResult(
+      first(await rows('SELECT * FROM atlas_verify_audit_integrity()'))
+    );
   },
 
   newId() { return crypto.randomUUID(); }

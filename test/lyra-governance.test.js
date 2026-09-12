@@ -4,6 +4,7 @@ import fs from 'node:fs/promises';
 
 const repositoryUrl = new URL('../server/data/command.repository.js', import.meta.url);
 import { classifyIntelligence, localReply } from '../api/lyra/chat.js';
+import { requireAuditIntegrityResult } from '../server/data/command.repository.js';
 
 test('LYRA fallback preserves memory verification distinctions', () => {
   const memoryData = {
@@ -50,4 +51,25 @@ test('persisted LYRA conversations cannot be rebound to another Commander sessio
     /WHERE lyra_conversations\.commander_binding_hash=EXCLUDED\.commander_binding_hash/
   );
   assert.match(source, /if \(!saved\.length\) throw new Error\('conversation_binding_mismatch'\)/);
+});
+
+
+test('audit verifier rejects missing or abnormal results instead of reporting success', () => {
+  assert.throws(() => requireAuditIntegrityResult(null), /audit_integrity_verifier_unavailable/);
+  assert.throws(
+    () => requireAuditIntegrityResult({ valid: 'true' }),
+    /audit_integrity_verifier_unavailable/
+  );
+  assert.deepEqual(requireAuditIntegrityResult({ valid: false, reason: 'event_hash_mismatch' }), {
+    valid: false,
+    reason: 'event_hash_mismatch',
+  });
+});
+
+test('LYRA client cannot submit a Guardian authorization constant', async () => {
+  const client = await fs.readFile(new URL('../src/lib/lyra-client.js', import.meta.url), 'utf8');
+  const handler = await fs.readFile(new URL('../api/lyra/chat.js', import.meta.url), 'utf8');
+  assert.doesNotMatch(client, /TACTICAL_ATLAS_PERSONAL|scope:/);
+  assert.match(handler, /authorizeGuardianRequest\(\)/);
+  assert.doesNotMatch(handler, /COMMANDER_TOOLS|STANDARD_TOOLS/);
 });

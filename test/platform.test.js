@@ -11,10 +11,21 @@ test('Atlas Core remains read-only and does not elevate client identity', () => 
   assert.equal(decision.executionMode, 'READ_ONLY');
   assert.equal(decision.identity.clearance, 'STANDARD');
 });
+test('memory retrieval intent is independent of the primary domain', () => {
+  const decision = runAtlasCore({
+    message: 'Show the mission objectives and recall the launch constraints',
+    identity: { isCommander: true },
+  });
+  assert.equal(decision.domain, 'MISSION');
+  assert.equal(decision.memoryPlan.action, 'SEARCH');
+  assert.equal(runAtlasCore({ message: 'mission status' }).memoryPlan.action, 'NONE');
+});
 test('unknown and protected tools are denied by default', () => {
   assert.equal(authorizeTool('writeMission', { isCommander: true }).allowed, false);
   assert.equal(authorizeTool('searchTAIN', { isCommander: false }).allowed, false);
   assert.equal(authorizeTool('searchTAIN', { isCommander: true }).allowed, true);
+  assert.equal(authorizeTool('proposeAction', { isCommander: false }).allowed, false);
+  assert.equal(authorizeTool('proposeAction', { isCommander: true }).allowed, true);
 });
 test('TAIN reports NOT_CONFIGURED without DATABASE_URL and fabricates no records', async () => {
   const databaseUrl = process.env.DATABASE_URL;

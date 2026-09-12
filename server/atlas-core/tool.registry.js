@@ -5,8 +5,8 @@ const definitions = [
   ['getEvidence', 'MISSION', 'OMEGA'], ['searchTAIN', 'TAIN', 'OMEGA'],
   ['getConnectedAccountStatus', 'INTEGRATION', 'OMEGA'], ['getIntegrationSyncHistory', 'INTEGRATION', 'OMEGA'],
   ['getApprovalQueue', 'MISSION', 'OMEGA'], ['getHeadquartersStatus', 'HQ', 'OMEGA'],
-  ['getLibraryStatus', 'LIBRARY', 'OMEGA']
-].map(([name, domain, requiredClearance]) => Object.freeze({ name, domain, requiredClearance, classification: EXECUTION_MODES.READ_ONLY, availability: VERIFICATION_STATES.DISCONNECTED }));
+  ['getLibraryStatus', 'LIBRARY', 'OMEGA'], ['proposeAction', 'MISSION', 'OMEGA', 'PROPOSAL_ONLY']
+].map(([name, domain, requiredClearance, classification = EXECUTION_MODES.READ_ONLY]) => Object.freeze({ name, domain, requiredClearance, classification, availability: VERIFICATION_STATES.DISCONNECTED }));
 export const TOOL_REGISTRY = Object.freeze(Object.fromEntries(definitions.map((tool) => [tool.name, tool])));
 export function authorizeTool(name, identity = {}) {
   const tool = TOOL_REGISTRY[name];

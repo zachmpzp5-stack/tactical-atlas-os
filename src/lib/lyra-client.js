@@ -1,5 +1,3 @@
-export const PERSONAL_ATLAS_SCOPE = 'TACTICAL_ATLAS_PERSONAL';
-
 const STORAGE_KEY = 'tactical-atlas:lyra-conversation:v1';
 const MAX_HISTORY = 10;
 
@@ -42,7 +40,6 @@ export async function sendLyraChat({ message, conversation, signal }) {
     headers: { 'Content-Type': 'application/json' },
     signal,
     body: JSON.stringify({
-      scope: PERSONAL_ATLAS_SCOPE,
       message,
       history: conversation.history,
       conversationId: conversation.conversationId,

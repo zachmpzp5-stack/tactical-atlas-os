@@ -2,6 +2,7 @@ import { determineLyraProfile } from '../../server/lyra/lyra.permissions.js';
 import { LYRA_PROMPTS } from '../../server/lyra/lyra.prompts.js';
 import { executeReadOnlyTool } from '../../server/lyra/lyra.tools.js';
 import { runAtlasCore } from '../../server/atlas-core/atlas.core.js';
+import { authorizeTool } from '../../server/atlas-core/tool.registry.js';
 import { generateModelResponse } from '../../server/providers/model.provider.js';
 import {
   applySecurityHeaders,
@@ -17,7 +18,7 @@ import { readCommanderSession } from '../../server/lyra/lyra.session.js';
 import { consumeRateLimit } from '../../server/security/rate-limit.js';
 import { safeLogError } from '../../server/security/redaction.js';
 import { sha256 } from '../../server/accounts/crypto.js';
-import { validateGuardianScope } from '../../server/security/guardian.js';
+import { authorizeGuardianRequest } from '../../server/security/guardian.js';
 
 export function localReply(identity, decision, toolData, memoryData) {
   if (toolData) {
@@ -42,23 +43,6 @@ export function localReply(identity, decision, toolData, memoryData) {
 
 const MAX_MESSAGE_LENGTH = 2000;
 const MAX_HISTORY = 10;
-
-const COMMANDER_TOOLS = new Set([
-  'getSystemStatus',
-  'getMissionStatus',
-  'getObjectives',
-  'getEvidence',
-  'searchTAIN',
-  'getConnectedAccountStatus',
-  'getIntegrationSyncHistory',
-  'getApprovalQueue',
-  'proposeAction',
-  'getHeadquartersStatus',
-  'getRecentActivity',
-  'getLibraryStatus',
-]);
-
-const STANDARD_TOOLS = new Set(['getSystemStatus', 'getRecentActivity']);
 
 function normalizeHistory(history) {
   if (!Array.isArray(history)) return [];
@@ -141,7 +125,7 @@ export default async function handler(req, res) {
   if (!isJsonRequest(req)) return res.status(415).json({ error: 'JSON content type required.' });
 
   try {
-    const guardian = validateGuardianScope(req.body?.scope);
+    const guardian = authorizeGuardianRequest();
     if (!guardian.allowed) {
       return res.status(403).json({
         error: 'LYRA accepts personal Tactical Atlas project requests only.',
@@ -192,9 +176,9 @@ export default async function handler(req, res) {
 
     if (requestTool) {
       const toolName = String(requestTool?.name || '');
-      const permittedTools = identity.isCommander ? COMMANDER_TOOLS : STANDARD_TOOLS;
+      const toolAuthorization = authorizeTool(toolName, identity);
 
-      if (!permittedTools.has(toolName)) {
+      if (!toolAuthorization.allowed) {
         return res.status(403).json({
           error: 'Tool unavailable at current clearance level.',
         });
@@ -343,7 +327,12 @@ export default async function handler(req, res) {
     });
   } catch (error) {
     safeLogError('[LYRA_COMMAND_CORE_ERROR]', error);
-
+    if (error.message === 'conversation_binding_mismatch') {
+      return res.status(409).json({
+        error: 'Conversation belongs to another Commander session.',
+        code: 'CONVERSATION_BINDING_MISMATCH',
+      });
+    }
     return res.status(502).json({
       error: 'LYRA Command Core processing failure.',
     });
