@@ -7,6 +7,7 @@ on:
       - main
       - 'preview/**'
       - 'hardening/**'
+      - 'recovery/**'
 
 permissions:
   contents: read

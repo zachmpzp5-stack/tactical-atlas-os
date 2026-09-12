@@ -22,6 +22,12 @@ test('Guardian denies requests that lack server-controlled context', () => {
   const missingOrigin = authorizeGuardianRequest({ headers: { host: 'atlas.example' }, body: {} });
   assert.equal(missingOrigin.allowed, false);
   assert.equal(missingOrigin.code, 'PERSONAL_PROJECT_ORIGIN_REQUIRED');
+  const missingHost = authorizeGuardianRequest({
+    headers: { origin: 'https://atlas.example' },
+    body: {},
+  });
+  assert.equal(missingHost.allowed, false);
+  assert.equal(missingHost.code, 'PERSONAL_PROJECT_ORIGIN_REQUIRED');
   const crossOrigin = authorizeGuardianRequest({
     headers: { origin: 'https://workplace.example', host: 'atlas.example' },
     body: { scope: PERSONAL_ATLAS_SCOPE },

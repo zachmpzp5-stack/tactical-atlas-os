@@ -23,4 +23,4 @@ Artifacts are written to `desktop-release/`:
 
 ## Unsigned-build warning
 
-These local artifacts are not code-signed. Windows SmartScreen can therefore show an “unrecognized app” warning. Verify the artifact came from this local build before choosing **More info → Run anyway**. Do not distribute a release build until it is signed with a trusted Windows code-signing certificate.
+These local artifacts are not code-signed. Windows SmartScreen can therefore show an “unrecognized app” warning. Verify the artifact came from this local build before choosing **More info → Run anyway**. Do not distribute a release build until it is signed with a trusted Windows code-signing certificate. Signing, update, deployment, and dependency-readiness requirements are documented in `RELEASE-READINESS.md`.

@@ -142,3 +142,32 @@ test('desktop packaging uses a hardened renderer and creates Windows shortcuts',
   assert.match(splash, /TACTICAL ATLAS/);
   assert.doesNotMatch(splash, /<script/i);
 });
+
+test('release preparation remains manual, unsigned by default, and secret-free', async () => {
+  const packageJson = JSON.parse(await fs.readFile('package.json', 'utf8'));
+  assert.equal('publish' in packageJson.build, false);
+  assert.equal('electron-updater' in packageJson.dependencies, false);
+  assert.equal('electron-updater' in packageJson.devDependencies, false);
+  assert.equal(JSON.stringify(packageJson).includes('CSC_LINK'), false);
+  assert.equal(JSON.stringify(packageJson).includes('CSC_KEY_PASSWORD'), false);
+
+  const readiness = await fs.readFile('RELEASE-READINESS.md', 'utf8');
+  for (const requirement of [
+    'WIN_CSC_LINK',
+    'WIN_CSC_KEY_PASSWORD',
+    'RFC 3161',
+    'Get-AuthenticodeSignature',
+    'signtool verify',
+    'manual installer updates initially',
+    'Do not add `electron-updater` yet',
+    'ATLAS_TEST_DATABASE_URL',
+    'ATLAS_TEST_DATABASE_CONFIRM=DISPOSABLE_PERSONAL_TACTICAL_ATLAS',
+    'react-router-dom` 7.18.3',
+  ]) {
+    assert.match(readiness, new RegExp(requirement.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'));
+  }
+
+  const workflow = await fs.readFile('.github/workflows/hardening.yml', 'utf8');
+  assert.match(workflow, /NODE_OPTIONS: --throw-deprecation/);
+  assert.match(workflow, /'recovery\/\*\*'/);
+});

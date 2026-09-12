@@ -4,6 +4,7 @@ import crypto from 'node:crypto';
 import { neon } from '@neondatabase/serverless';
 import { commandRepository, requireAuditIntegrityResult } from '../server/data/command.repository.js';
 import { resetDatabaseForTests } from '../server/data/database.js';
+import { validateDisposablePersonalNeon } from './support/disposable-postgres.js';
 import {
   ensureMigrations,
   MIGRATIONS,
@@ -35,27 +36,18 @@ function missionArguments(idempotencyKey, auditId = uuid()) {
   ];
 }
 
-function assertDisposablePersonalNeon() {
-  assert.equal(
-    confirmation,
-    'DISPOSABLE_PERSONAL_TACTICAL_ATLAS',
-    'set ATLAS_TEST_DATABASE_CONFIRM=DISPOSABLE_PERSONAL_TACTICAL_ATLAS only for an explicitly disposable personal Tactical Atlas database'
-  );
-  const url = new URL(databaseUrl);
-  assert.match(url.protocol, /^postgres(?:ql)?:$/);
-  assert.match(url.hostname, /(^|\.)neon\.tech$/i);
-}
-
 test('disposable personal Neon validates migrations, transactions, audit, and LYRA ownership', { skip }, async () => {
-  assertDisposablePersonalNeon();
+  const databaseIdentity = validateDisposablePersonalNeon(databaseUrl, confirmation);
+  assert.match(databaseIdentity.database, /tactical.*atlas/i);
   process.env.NODE_ENV = 'test';
   process.env.DATABASE_URL = databaseUrl;
   resetDatabaseForTests();
   resetMigrationsForTests();
   const sql = neon(databaseUrl, { fullResults: false });
   const existingTables = await sql.query(
-    `SELECT table_name FROM information_schema.tables
-      WHERE table_schema=current_schema() AND table_type='BASE TABLE'`
+    `SELECT table_schema,table_name FROM information_schema.tables
+      WHERE table_schema <> 'information_schema' AND table_schema !~ '^pg_'
+        AND table_type='BASE TABLE'`
   );
   assert.deepEqual(
     existingTables,
@@ -85,6 +77,38 @@ test('disposable personal Neon validates migrations, transactions, audit, and LY
     migrationRows.map((row) => [Number(row.version), Number(row.count)]),
     MIGRATIONS.map((migration) => [migration.version, 1])
   );
+  assert.equal(
+    Number(migrationRows.find((row) => Number(row.version) === 6)?.count),
+    1,
+    'migration 006 must be registered exactly once'
+  );
+
+  await assert.rejects(
+    () =>
+      sql.transaction([
+        sql.query("SELECT pg_advisory_xact_lock(hashtext('tactical_atlas_schema_migrations'))"),
+        sql.query('CREATE TABLE atlas_migration_retry_probe (id INTEGER PRIMARY KEY)'),
+        sql.query('INSERT INTO atlas_migration_retry_probe(id) VALUES(1),(1)'),
+      ]),
+    /duplicate key|unique constraint/i
+  );
+  const interruptedMigration = await sql.query(
+    "SELECT to_regclass('public.atlas_migration_retry_probe') AS relation"
+  );
+  assert.equal(interruptedMigration[0].relation, null);
+  try {
+    await sql.transaction([
+      sql.query("SELECT pg_advisory_xact_lock(hashtext('tactical_atlas_schema_migrations'))"),
+      sql.query('CREATE TABLE atlas_migration_retry_probe (id INTEGER PRIMARY KEY)'),
+      sql.query('INSERT INTO atlas_migration_retry_probe(id) VALUES(1)'),
+    ]);
+    const retryRows = await sql.query(
+      'SELECT count(*)::int AS count FROM atlas_migration_retry_probe'
+    );
+    assert.equal(Number(retryRows[0].count), 1);
+  } finally {
+    await sql.query('DROP TABLE IF EXISTS atlas_migration_retry_probe');
+  }
 
   const idempotencyKey = `postgres:mission:${crypto.randomUUID()}`;
   const [first, replay] = await Promise.all([
@@ -117,6 +141,91 @@ test('disposable personal Neon validates migrations, transactions, audit, and LY
   );
   assert.equal(Number(missionCount[0].count), 1);
 
+  const transitionKey = `postgres:transition:${crypto.randomUUID()}`;
+  const [transition, transitionReplay] = await Promise.all([
+    commandRepository.transitionMission({
+      missionId: first.id,
+      eventId: uuid(),
+      auditId: uuid(),
+      nextState: 'REVIEW',
+      actor,
+      reason: 'Validate transition idempotency.',
+      idempotencyKey: transitionKey,
+    }),
+    commandRepository.transitionMission({
+      missionId: first.id,
+      eventId: uuid(),
+      auditId: uuid(),
+      nextState: 'REVIEW',
+      actor,
+      reason: 'Validate concurrent transition replay.',
+      idempotencyKey: transitionKey,
+    }),
+  ]);
+  assert.equal(transition.id, transitionReplay.id);
+  assert.equal(transition.state, 'REVIEW');
+  assert.deepEqual([transition.idempotent, transitionReplay.idempotent].sort(), [false, true]);
+  assert.equal(
+    Number((await sql.query(
+      'SELECT count(*)::int AS count FROM mission_events WHERE idempotency_key=$1',
+      [transitionKey]
+    ))[0].count),
+    1
+  );
+
+  const candidateId = uuid();
+  await commandRepository.createMemoryCandidate({
+    id: candidateId,
+    memoryType: 'INFERENCE',
+    subjectKey: `postgres.memory.${candidateId}`,
+    title: 'Concurrent PostgreSQL memory candidate',
+    content: 'This unverified inference requires Commander review.',
+    normalizedHash: crypto.createHash('sha256').update(candidateId).digest('hex'),
+    source: 'Disposable PostgreSQL integration test',
+    provenance: { sourceKind: 'LYRA_INFERENCE' },
+    sourceTimestamp: new Date().toISOString(),
+    verificationStatus: 'UNVERIFIED',
+    confidence: 0.5,
+    sensitivity: 'INTERNAL',
+    retentionPolicy: 'STANDARD',
+    expiresAt: null,
+    reviewAt: null,
+    missionId: null,
+    proposedBy: actor,
+    sourceRecordRetained: false,
+    status: 'PENDING_REVIEW',
+    idempotencyKey: `postgres:candidate:${crypto.randomUUID()}`,
+    auditId: uuid(),
+  });
+  const memoryKey = `postgres:memory-accept:${crypto.randomUUID()}`;
+  const [memory, memoryReplay] = await Promise.all([
+    commandRepository.acceptMemoryCandidate({
+      candidateId,
+      memoryId: uuid(),
+      auditId: uuid(),
+      actor,
+      idempotencyKey: memoryKey,
+      reason: 'Validate memory acceptance idempotency.',
+    }),
+    commandRepository.acceptMemoryCandidate({
+      candidateId,
+      memoryId: uuid(),
+      auditId: uuid(),
+      actor,
+      idempotencyKey: memoryKey,
+      reason: 'Validate concurrent memory acceptance replay.',
+    }),
+  ]);
+  assert.equal(memory.id, memoryReplay.id);
+  assert.deepEqual([memory.idempotent, memoryReplay.idempotent].sort(), [false, true]);
+  assert.equal(
+    Number((await sql.query(
+      "SELECT count(*)::int AS count FROM tain_records WHERE provenance->>'acceptIdempotencyKey'=$1",
+      [memoryKey]
+    ))[0].count),
+    1
+  );
+
   const duplicateAuditId = (
     await sql.query(
       "SELECT id FROM security_audit_events WHERE actor=$1 AND event_type='MISSION_CREATED' ORDER BY sequence LIMIT 1",
@@ -135,6 +244,20 @@ test('disposable personal Neon validates migrations, transactions, audit, and LY
     Number((await sql.query('SELECT count(*)::int AS count FROM missions WHERE id=$1', [rollbackArguments[0]]))[0].count),
     0
   );
+  const retryArguments = [...rollbackArguments];
+  retryArguments[2] = uuid();
+  const retryResult = await sql.query(
+    'SELECT atlas_create_mission($1,$2,$3,$4,$5,$6,$7,$8) AS result',
+    retryArguments
+  );
+  assert.equal(retryResult[0].result.id, rollbackArguments[0]);
+  assert.equal(retryResult[0].result.idempotent, false);
+  const retryReplay = await sql.query(
+    'SELECT atlas_create_mission($1,$2,$3,$4,$5,$6,$7,$8) AS result',
+    retryArguments
+  );
+  assert.equal(retryReplay[0].result.id, rollbackArguments[0]);
+  assert.equal(retryReplay[0].result.idempotent, true);
 
   const conversationId = uuid();
   await commandRepository.saveLyraExchange({
