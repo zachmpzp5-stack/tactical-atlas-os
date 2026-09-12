@@ -33,6 +33,7 @@
     { "src": "/api/integrations/sync", "dest": "/api/command?route=integration-sync" },
     { "src": "/api/integrations/sync-history", "dest": "/api/command?route=integration-sync-history" },
     { "src": "/api/integrations/records", "dest": "/api/command?route=integration-records" },
+    { "src": "/api/audit/integrity", "dest": "/api/command?route=audit-integrity" },
     { "handle": "filesystem" },
     { "src": "/.*", "dest": "/index.html" }
   ]

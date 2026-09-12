@@ -2,6 +2,7 @@ import { missionEngine } from '../server/missions/mission.engine.js';
 import { memoryKernel } from '../server/tain/memory.kernel.js';
 import { approvalService } from '../server/approvals/approval.service.js';
 import { integrationSyncService } from '../server/integrations/sync.service.js';
+import { commandRepository } from '../server/data/command.repository.js';
 import { getDatabaseStatus } from '../server/data/database.js';
 import { consumeRateLimit } from '../server/security/rate-limit.js';
 import { prepareJsonResponse, requireCommander, requireIdempotencyKey, requireJsonWrite } from '../server/platform/http.js';
@@ -22,7 +23,8 @@ const ROUTES = Object.freeze({
   'proposal-decision': { methods: ['POST'], write: true },
   'integration-sync': { methods: ['POST'], write: true },
   'integration-sync-history': { methods: ['GET'] },
-  'integration-records': { methods: ['GET'] }
+  'integration-records': { methods: ['GET'] },
+  'audit-integrity': { methods: ['GET'] }
 });
 
 function isWrite(route, req) {
@@ -126,6 +128,15 @@ export default async function handler(req, res) {
     if (routeName === 'integration-sync') return res.status(200).json(await integrationSyncService.run(req.body?.provider, idempotencyKey));
     if (routeName === 'integration-sync-history') {
       return res.status(200).json({ status: 'READY', source: 'NEON_POSTGRES', freshness: new Date().toISOString(), runs: await integrationSyncService.history({ provider: req.query?.provider || null, limit: queryLimit(req.query?.limit, 25) }) });
+    }
+    if (routeName === 'audit-integrity') {
+      const integrity = await commandRepository.verifyAuditIntegrity();
+      return res.status(integrity.valid ? 200 : 409).json({
+        status: integrity.valid ? 'VERIFIED' : 'INTEGRITY_FAILURE',
+        source: 'NEON_POSTGRES',
+        freshness: new Date().toISOString(),
+        integrity
+      });
     }
     return res.status(200).json({ status: 'READY', source: 'NEON_POSTGRES', freshness: new Date().toISOString(), records: await integrationSyncService.records({ provider: req.query?.provider || null, limit: queryLimit(req.query?.limit, 25) }) });
   } catch (error) {

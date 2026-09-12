@@ -19,15 +19,21 @@ import { safeLogError } from '../../server/security/redaction.js';
 import { sha256 } from '../../server/accounts/crypto.js';
 import { validateGuardianScope } from '../../server/security/guardian.js';
 
-function localReply(identity, decision, toolData, memoryData) {
-  if (toolData)
-    return `${identity.isCommander ? 'Commander' : 'Operator'}, the read-only ${toolData.tool || decision.domain} result is ${toolData.status || toolData.verificationState || 'AVAILABLE'}. ${toolData.message || 'Verified data is attached to this response.'}`;
+export function localReply(identity, decision, toolData, memoryData) {
+  if (toolData) {
+    const detail =
+      toolData.message ||
+      (toolData.verificationState === 'VERIFIED'
+        ? 'Server-verified data and source metadata are attached to this response.'
+        : 'Tool status and source metadata are attached without a verification claim.');
+    return `${identity.isCommander ? 'Commander' : 'Operator'}, the read-only ${toolData.tool || decision.domain} result is ${toolData.status || toolData.verificationState || 'AVAILABLE'}. ${detail}`;
+  }
   if (memoryData?.results?.length) {
     const references = memoryData.results
       .slice(0, 3)
       .map((record) => record.title)
       .join(', ');
-    return `Commander, TAIN found ${memoryData.results.length} verified project-knowledge record${memoryData.results.length === 1 ? '' : 's'}: ${references}. The intelligence model is not configured, so I am returning source-backed retrieval without generated interpretation.`;
+    return `Commander, TAIN found ${memoryData.results.length} governed project-knowledge record${memoryData.results.length === 1 ? '' : 's'}: ${references}. Verification state, confidence, freshness, and conflict metadata are attached to each record. The intelligence model is not configured, so I am returning retrieval results without generated interpretation.`;
   }
   return identity.isCommander
     ? `Commander, Atlas Core routed this request to ${decision.domain} in READ_ONLY mode. The intelligence provider is not configured, but authenticated platform tools and TAIN retrieval remain operational.`
@@ -75,10 +81,12 @@ function normalizeHistory(history) {
     .filter(Boolean);
 }
 
-function classifyIntelligence(toolData, memoryData, proposal) {
+export function classifyIntelligence(toolData, memoryData, proposal) {
   const memories = memoryData?.results || [];
   const verifiedFacts = memories
-    .filter((item) => item.verificationStatus === 'VERIFIED')
+    .filter(
+      (item) => item.memoryType === 'FACT' && item.verificationStatus === 'VERIFIED'
+    )
     .map((item) => ({
       memoryId: item.id,
       title: item.title,
@@ -100,7 +108,16 @@ function classifyIntelligence(toolData, memoryData, proposal) {
       stale: item.evidence?.stale,
       conflicting: item.evidence?.conflicting,
     })),
-    inference: [],
+    inference: memories
+      .filter((item) => ['INFERENCE', 'HYPOTHESIS'].includes(item.memoryType))
+      .map((item) => ({
+        memoryId: item.id,
+        type: item.memoryType,
+        source: item.source,
+        confidence: item.confidence,
+        stale: item.evidence?.stale,
+        conflicting: item.evidence?.conflicting,
+      })),
     unavailable: [toolData, memoryData]
       .filter(
         (item) => item && ['NOT_CONFIGURED', 'UNAVAILABLE', 'DISCONNECTED'].includes(item.status)
@@ -288,7 +305,7 @@ export default async function handler(req, res) {
     let conversationPersistence = getDatabaseStatus().configured
       ? 'SKIPPED_STANDARD_SESSION'
       : 'NOT_CONFIGURED';
-    let conversationId = /^[0-9a-f-]{36}$/i.test(String(req.body?.conversationId || ''))
+    let conversationId = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(req.body?.conversationId || ''))
       ? req.body.conversationId
       : crypto.randomUUID();
     if (commanderSession && getDatabaseStatus().configured) {

@@ -1,12 +1,12 @@
 # Tactical ATLAS Field Command Mobile
 
-The repository now contains Capacitor 8 projects for Android and iOS. The browser app still opens Headquarters at `/`; installed native apps open Field Command first.
+The repository contains Capacitor 8 configuration and a shared mobile bundle path. Native Android and iOS projects must still be generated before platform sync; the browser app opens Headquarters at `/`, while generated native apps open Field Command first.
 
 ## Current scope
 
 - Personal, single-commander native shell
-- Android project in `android/`
-- iOS project in `ios/`
+- Android project not yet generated (`npm run mobile:add:android`)
+- iOS project not yet generated (`npm run mobile:add:ios` on a Mac)
 - Native web bundle isolated in `mobile-dist/` so the protected `dist/` folder is not changed
 - Mission, approval, readiness, and navigation surfaces optimized for phone use
 - No app-store publishing, cloud provisioning, or production deployment
@@ -23,6 +23,7 @@ The mobile shell currently calls the Tactical ATLAS API at `/api`. Until a priva
 
 ```powershell
 npm install
+npm run mobile:add:android
 npm run mobile:sync
 ```
 
@@ -35,6 +36,7 @@ npm run mobile:open:android
 For iOS, run this on a Mac:
 
 ```powershell
+npm run mobile:add:ios
 npm run mobile:sync:ios
 npm run mobile:open:ios
 ```

@@ -221,7 +221,7 @@ test('webhook framework rejects expired and forged signatures using constant-tim
   );
 });
 
-test('missing Neon configuration is truthful and migrations cover the required data plane', () => {
+test('missing Neon configuration is truthful and migrations cover the required data plane', async () => {
   const existing = process.env.DATABASE_URL;
   delete process.env.DATABASE_URL;
   assert.deepEqual(getDatabaseStatus(), {
@@ -252,6 +252,8 @@ test('missing Neon configuration is truthful and migrations cover the required d
   assert.match(sql, /security_audit_events are immutable/);
   assert.match(sql, /pg_advisory_xact_lock/);
   assert.match(sql, /atlas_verify_audit_integrity/);
+  const repositorySource = await fs.readFile('server/data/command.repository.js', 'utf8');
+  assert.match(repositorySource, /SELECT \* FROM atlas_verify_audit_integrity\(\)/);
 });
 
 test('YouTube synchronization stores only real normalized read-only response data and is resumable', async (t) => {
@@ -323,6 +325,7 @@ test('YouTube synchronization stores only real normalized read-only response dat
 test('route consolidation, protected output, and the 11-Function ceiling remain intact', async () => {
   const config = JSON.parse(await fs.readFile('vercel.json', 'utf8'));
   assert.ok(config.routes.find((route) => route.dest === '/api/command?route=missions'));
+  assert.ok(config.routes.find((route) => route.dest === '/api/command?route=audit-integrity'));
   assert.ok(
     config.routes.find((route) => route.dest === '/api/accounts?route=callback&provider=$1')
   );

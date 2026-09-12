@@ -242,14 +242,18 @@ export const commandRepository = Object.freeze({
   },
 
   async saveLyraExchange({ conversationId, userMessageId, replyMessageId, bindingHash, clearance, message, reply, classification, evidenceReferences }) {
-    await rows(`WITH conversation AS (
+    const saved = await rows(`WITH conversation AS (
       INSERT INTO lyra_conversations(id,commander_binding_hash,clearance) VALUES($1,$4,$5)
-      ON CONFLICT(id) DO UPDATE SET updated_at=clock_timestamp() RETURNING id
+      ON CONFLICT(id) DO UPDATE SET clearance=EXCLUDED.clearance,updated_at=clock_timestamp()
+        WHERE lyra_conversations.commander_binding_hash=EXCLUDED.commander_binding_hash
+      RETURNING id
     ), user_message AS (
       INSERT INTO lyra_messages(id,conversation_id,role,content) SELECT $2,id,'USER',$6 FROM conversation ON CONFLICT(id) DO NOTHING
     ) INSERT INTO lyra_messages(id,conversation_id,role,content,fact_classification,evidence_references)
-      SELECT $3,id,'LYRA',$7,$8::jsonb,$9::jsonb FROM conversation ON CONFLICT(id) DO NOTHING`,
+      SELECT $3,id,'LYRA',$7,$8::jsonb,$9::jsonb FROM conversation ON CONFLICT(id) DO NOTHING
+      RETURNING conversation_id`,
       [conversationId,userMessageId,replyMessageId,bindingHash,clearance,message,reply,JSON.stringify(classification),JSON.stringify(evidenceReferences)]);
+    if (!saved.length) throw new Error('conversation_binding_mismatch');
   },
 
   async createSyncRun({ id, provider, idempotencyKey }) {
@@ -309,6 +313,10 @@ export const commandRepository = Object.freeze({
   async getAuditEvents({ limit = 1000 } = {}) {
     return rows(`SELECT id,event_type,entity_type,entity_id,actor,action,payload,previous_hash,event_hash,created_at
       FROM security_audit_events ORDER BY sequence ASC LIMIT $1`, [limit]);
+  },
+
+  async verifyAuditIntegrity() {
+    return first(await rows('SELECT * FROM atlas_verify_audit_integrity()'));
   },
 
   newId() { return crypto.randomUUID(); }

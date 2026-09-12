@@ -70,7 +70,8 @@ const server = http.createServer(async (request, rawResponse) => {
       [/^\/api\/proposals$/, 'proposals'],
       [/^\/api\/integrations\/sync$/, 'integration-sync'],
       [/^\/api\/integrations\/sync-history$/, 'integration-sync-history'],
-      [/^\/api\/integrations\/records$/, 'integration-records']
+      [/^\/api\/integrations\/records$/, 'integration-records'],
+      [/^\/api\/audit\/integrity$/, 'audit-integrity']
     ];
     const matchedCommand = commandRoutes.map(([pattern, route, parameter]) => ({ match: pathname.match(pattern), route, parameter })).find((entry) => entry.match);
     if (matchedCommand) {
