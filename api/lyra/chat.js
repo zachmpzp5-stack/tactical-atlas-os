@@ -125,7 +125,7 @@ export default async function handler(req, res) {
   if (!isJsonRequest(req)) return res.status(415).json({ error: 'JSON content type required.' });
 
   try {
-    const guardian = authorizeGuardianRequest();
+    const guardian = authorizeGuardianRequest(req);
     if (!guardian.allowed) {
       return res.status(403).json({
         error: 'LYRA accepts personal Tactical Atlas project requests only.',

@@ -251,6 +251,19 @@ test('missing Neon configuration is truthful and migrations cover the required d
     assert.match(sql, new RegExp(`CREATE TABLE IF NOT EXISTS ${table}`));
   assert.match(sql, /security_audit_events are immutable/);
   assert.match(sql, /pg_advisory_xact_lock/);
+  const concurrency = MIGRATIONS.find((migration) => migration.version === 6);
+  assert.equal(concurrency?.name, 'concurrency_idempotency');
+  for (const scope of ['mission_create', 'mission_transition', 'memory_accept']) {
+    const statement = concurrency.statements.find((text) => text.includes(`${scope}:' || p_idempotency_key`));
+    assert.ok(statement, `${scope} must take an idempotency-scoped advisory lock`);
+    assert.ok(
+      statement.indexOf('pg_advisory_xact_lock') < statement.indexOf('WHERE idempotency_key') ||
+        statement.indexOf('pg_advisory_xact_lock') < statement.indexOf("provenance->>'acceptIdempotencyKey'"),
+      `${scope} must lock before the check-then-act read`
+    );
+  }
+  const runnerSource = await fs.readFile('server/data/migrations/index.js', 'utf8');
+  assert.doesNotMatch(runnerSource, /atlas_apply_migration_statement|EXECUTE p_statement/);
   assert.match(sql, /atlas_verify_audit_integrity/);
   const repositorySource = await fs.readFile('server/data/command.repository.js', 'utf8');
   assert.match(repositorySource, /SELECT \* FROM atlas_verify_audit_integrity\(\)/);

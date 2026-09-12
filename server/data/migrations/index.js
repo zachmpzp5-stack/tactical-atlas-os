@@ -3,9 +3,10 @@ import migration002 from './002-memory-and-approvals.js';
 import migration003 from './003-integration-operations.js';
 import migration004 from './004-ai-brain-kernel.js';
 import migration005 from './005-governance-functions.js';
+import migration006 from './006-concurrency-idempotency.js';
 import { getDatabaseStatus, query, transaction } from '../database.js';
 
-export const MIGRATIONS = Object.freeze([migration001, migration002, migration003, migration004, migration005]);
+export const MIGRATIONS = Object.freeze([migration001, migration002, migration003, migration004, migration005, migration006]);
 let migrationPromise = null;
 
 async function applyMigrations() {

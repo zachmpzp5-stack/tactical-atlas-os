@@ -70,6 +70,6 @@ test('LYRA client cannot submit a Guardian authorization constant', async () => 
   const client = await fs.readFile(new URL('../src/lib/lyra-client.js', import.meta.url), 'utf8');
   const handler = await fs.readFile(new URL('../api/lyra/chat.js', import.meta.url), 'utf8');
   assert.doesNotMatch(client, /TACTICAL_ATLAS_PERSONAL|scope:/);
-  assert.match(handler, /authorizeGuardianRequest\(\)/);
+  assert.match(handler, /authorizeGuardianRequest\(req\)/);
   assert.doesNotMatch(handler, /COMMANDER_TOOLS|STANDARD_TOOLS/);
 });
