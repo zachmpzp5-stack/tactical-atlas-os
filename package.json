@@ -28,7 +28,12 @@
     "check:deprecated-urls": "node scripts/check-deprecated-urls.mjs",
     "format:check": "prettier --check .",
     "check:setup": "node --check setup.cjs",
-    "verify": "npm run check:setup && npm test && npm run check:syntax && npm run security:check && npm run check:functions && npm run check:interactions && npm run check:deprecated-urls && npm run lint && npm run build"
+    "verify": "npm run check:setup && npm test && npm run check:syntax && npm run security:check && npm run check:functions && npm run check:interactions && npm run check:deprecated-urls && npm run lint && npm run build",
+    "desktop:dev": "npm run build:desktop && electron .",
+    "build:desktop": "node scripts/build-desktop.mjs",
+    "desktop:build": "npm run build:desktop && electron-builder --dir --win",
+    "desktop:package": "npm run build:desktop && electron-builder --win portable",
+    "desktop:installer": "npm run build:desktop && electron-builder --win nsis"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.0",
@@ -39,7 +44,7 @@
     "lucide-react": "^0.344.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.22.0"
+    "react-router-dom": "6.30.6"
   },
   "devDependencies": {
     "@capacitor/cli": "^8.5.0",
@@ -48,6 +53,8 @@
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.18",
     "concurrently": "^10.0.4",
+    "electron": "44.3.0",
+    "electron-builder": "26.15.3",
     "eslint": "^8.57.0",
     "eslint-plugin-jsx-a11y": "^6.8.0",
     "eslint-plugin-react": "^7.34.0",
@@ -61,6 +68,75 @@
     "node": ">=22 <25"
   },
   "allowScripts": {
-    "esbuild@0.21.5": true
-  }
+    "esbuild@0.21.5": true,
+    "electron-winstaller@5.4.0": true
+  },
+  "main": "desktop/main.js",
+  "build": {
+    "appId": "com.zachperryman.tacticalatlas",
+    "productName": "Tactical Atlas",
+    "asar": true,
+    "directories": {
+      "output": "desktop-release"
+    },
+    "files": [
+      "api/**/*",
+      "desktop/**/*",
+      "dist/**/*",
+      "server/**/*",
+      "package.json",
+      "!node_modules/@capacitor{,/**/*}",
+      "!node_modules/@remix-run{,/**/*}",
+      "!node_modules/js-tokens{,/**/*}",
+      "!node_modules/loose-envify{,/**/*}",
+      "!node_modules/lucide-react{,/**/*}",
+      "!node_modules/react{,/**/*}",
+      "!node_modules/react-dom{,/**/*}",
+      "!node_modules/react-router{,/**/*}",
+      "!node_modules/react-router-dom{,/**/*}",
+      "!node_modules/scheduler{,/**/*}",
+      "!node_modules/tslib{,/**/*}"
+    ],
+    "extraMetadata": {
+      "main": "desktop/main.js"
+    },
+    "win": {
+      "icon": "public/assets/tactical-atlas-icon.png",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Tactical Atlas",
+      "deleteAppDataOnUninstall": false,
+      "artifactName": "Tactical-Atlas-Setup-${version}-${arch}.${ext}"
+    },
+    "extraResources": [
+      {
+        "from": "public/assets/tactical-atlas-icon.png",
+        "to": "tactical-atlas-icon.png"
+      }
+    ],
+    "portable": {
+      "artifactName": "Tactical-Atlas-Portable-${version}-${arch}.${ext}"
+    }
+  },
+  "description": "Personal, read-only intelligence and field command operating system.",
+  "author": "Zach Perryman"
 }
