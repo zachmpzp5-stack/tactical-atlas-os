@@ -1,7 +1,7 @@
 import { EXECUTION_MODES, VERIFICATION_STATES, createRequestId } from '../platform/contracts.js';
 import { authorizeTool } from './tool.registry.js';
 export const ATLAS_CORE = Object.freeze({ name: 'ATLAS CORE', version: '2.0.0', status: 'READY' });
-const MEMORY_INTENT = /\b(tain|memory|memories|remember|recall|record)\b/i;
+const MEMORY_INTENT = /\b(tain|memory|memories|remember|recall)\b/i;
 const DOMAIN_RULES = Object.freeze([
   ['SYSTEM', /\b(system|health|status)\b/i], ['MISSION', /\b(mission|objective|operation)\b/i],
   ['TAIN', MEMORY_INTENT], ['LIBRARY', /\b(library|archive|dossier)\b/i], ['HQ', /\b(headquarters|hq)\b/i]
@@ -11,7 +11,9 @@ export function hasMemoryRetrievalIntent(message = '') { return MEMORY_INTENT.te
 export function runAtlasCore({ message = '', identity = {}, requestedTool = null, memoryAvailable = true } = {}) {
   const domain = classifyDomain(message);
   const toolDecision = requestedTool ? authorizeTool(requestedTool, identity) : null;
-  const shouldSearchMemory = requestedTool === 'searchTAIN' || hasMemoryRetrievalIntent(message);
+  const shouldSearchMemory =
+    toolDecision?.allowed !== false &&
+    (requestedTool === 'searchTAIN' || hasMemoryRetrievalIntent(message));
   return {
     core: ATLAS_CORE.name, version: ATLAS_CORE.version, status: ATLAS_CORE.status, requestId: createRequestId(),
     identity: { profile: identity.profile || 'LYRA_STANDARD', clearance: identity.isCommander ? 'OMEGA' : 'STANDARD', isCommander: Boolean(identity.isCommander) },

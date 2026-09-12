@@ -3,47 +3,25 @@ import migration002 from './002-memory-and-approvals.js';
 import migration003 from './003-integration-operations.js';
 import migration004 from './004-ai-brain-kernel.js';
 import migration005 from './005-governance-functions.js';
-import migration006 from './006-concurrency-idempotency.js';
-import { getDatabaseStatus, transaction } from '../database.js';
+import { getDatabaseStatus, query, transaction } from '../database.js';
 
-export const MIGRATIONS = Object.freeze([migration001, migration002, migration003, migration004, migration005, migration006]);
+export const MIGRATIONS = Object.freeze([migration001, migration002, migration003, migration004, migration005]);
 let migrationPromise = null;
 
 async function applyMigrations() {
-  await transaction([
-    { text: "SELECT pg_advisory_xact_lock(hashtext('tactical_atlas_schema_migrations'))" },
-    { text: `CREATE TABLE IF NOT EXISTS atlas_schema_migrations (
-      version INTEGER PRIMARY KEY, name TEXT NOT NULL, applied_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp()
-    )` },
-    { text: `CREATE OR REPLACE FUNCTION atlas_apply_migration_statement(
-      p_version INTEGER, p_name TEXT, p_statement TEXT
-    ) RETURNS BOOLEAN AS $$
-      BEGIN
-        IF EXISTS (SELECT 1 FROM atlas_schema_migrations WHERE version=p_version) THEN
-          RETURN false;
-        END IF;
-        EXECUTE p_statement;
-        RETURN true;
-      END;
-    $$ LANGUAGE plpgsql` }
-  ]);
+  await query(`CREATE TABLE IF NOT EXISTS atlas_schema_migrations (
+    version INTEGER PRIMARY KEY, name TEXT NOT NULL, applied_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp()
+  )`);
+  const applied = new Set((await query('SELECT version FROM atlas_schema_migrations')).map((row) => Number(row.version)));
   const completed = [];
   for (const migration of MIGRATIONS) {
-    const result = await transaction([
+    if (applied.has(migration.version)) continue;
+    await transaction([
       { text: "SELECT pg_advisory_xact_lock(hashtext('tactical_atlas_schema_migrations'))" },
-      {
-        text: `SELECT NOT EXISTS(
-          SELECT 1 FROM atlas_schema_migrations WHERE version=$1
-        ) AS should_apply`,
-        params: [migration.version]
-      },
-      ...migration.statements.map((text) => ({
-        text: `SELECT atlas_apply_migration_statement($1,$2,$3) AS applied`,
-        params: [migration.version, migration.name, text]
-      })),
+      ...migration.statements.map((text) => ({ text })),
       { text: 'INSERT INTO atlas_schema_migrations(version,name) VALUES($1,$2) ON CONFLICT (version) DO NOTHING', params: [migration.version, migration.name] }
     ]);
-    if (result[1]?.[0]?.should_apply) completed.push(migration.version);
+    completed.push(migration.version);
   }
   return { status: 'READY', provider: 'NEON_POSTGRES', applied: completed, currentVersion: MIGRATIONS.at(-1).version };
 }

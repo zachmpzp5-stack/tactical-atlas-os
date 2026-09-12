@@ -12,7 +12,10 @@ import {
 
 const databaseUrl = String(process.env.ATLAS_TEST_DATABASE_URL || '').trim();
 const confirmation = process.env.ATLAS_TEST_DATABASE_CONFIRM;
-const skip = databaseUrl ? false : 'ATLAS_TEST_DATABASE_URL is not configured';
+const skip =
+  databaseUrl && confirmation
+    ? false
+    : 'ATLAS_TEST_DATABASE_URL and ATLAS_TEST_DATABASE_CONFIRM are not configured';
 const actor = `COMMANDER:POSTGRES_TEST:${crypto.randomUUID()}`;
 
 function uuid() {
@@ -50,10 +53,15 @@ test('disposable personal Neon validates migrations, transactions, audit, and LY
   resetDatabaseForTests();
   resetMigrationsForTests();
   const sql = neon(databaseUrl, { fullResults: false });
-
-  const firstMigration = await ensureMigrations();
-  assert.equal(firstMigration.status, 'READY');
-  assert.equal(firstMigration.currentVersion, MIGRATIONS.at(-1).version);
+  const existingTables = await sql.query(
+    `SELECT table_name FROM information_schema.tables
+      WHERE table_schema=current_schema() AND table_type='BASE TABLE'`
+  );
+  assert.deepEqual(
+    existingTables,
+    [],
+    'the dedicated personal Tactical Atlas integration database must start empty'
+  );
 
   const runnerKey = crypto.randomUUID();
   const [runnerA, runnerB] = await Promise.all([
@@ -65,6 +73,11 @@ test('disposable personal Neon validates migrations, transactions, audit, and LY
     runnerB.ensureMigrations(),
   ]);
   assert.ok(concurrentMigrations.every((result) => result.status === 'READY'));
+
+  const repeatMigration = await ensureMigrations();
+  assert.equal(repeatMigration.status, 'READY');
+  assert.equal(repeatMigration.currentVersion, MIGRATIONS.at(-1).version);
+  assert.deepEqual(repeatMigration.applied, []);
   const migrationRows = await sql.query(
     'SELECT version,count(*)::int AS count FROM atlas_schema_migrations GROUP BY version ORDER BY version'
   );
@@ -159,8 +172,24 @@ test('disposable personal Neon validates migrations, transactions, audit, and LY
   assert.equal(conversation[0].commander_binding_hash, 'binding-a');
   assert.equal(Number(conversation[0].message_count), 2);
 
+  const concurrentAuditPrefix = `postgres:audit:${crypto.randomUUID()}`;
+  await Promise.all(
+    Array.from({ length: 5 }, (_, index) =>
+      commandRepository.createMission({
+        id: uuid(),
+        eventId: uuid(),
+        auditId: uuid(),
+        title: `Concurrent audit mission ${index + 1}`,
+        summary: 'Exercise advisory-locked audit appends.',
+        actor,
+        reason: 'Validate audit-chain ordering under concurrency.',
+        idempotencyKey: `${concurrentAuditPrefix}:${index}`,
+      })
+    )
+  );
+
   const auditRows = await sql.query(
-    'SELECT sequence,id,event_hash FROM security_audit_events WHERE actor=$1 ORDER BY sequence',
+    'SELECT sequence,id,previous_hash,event_hash FROM security_audit_events WHERE actor=$1 ORDER BY sequence',
     [actor]
   );
   assert.ok(auditRows.length >= 1);
@@ -169,6 +198,12 @@ test('disposable personal Neon validates migrations, transactions, audit, and LY
     auditRows.map((event) => Number(event.sequence)).toSorted((a, b) => a - b)
   );
   assert.equal((await commandRepository.verifyAuditIntegrity()).valid, true);
+  const allAuditRows = await sql.query(
+    'SELECT sequence,previous_hash,event_hash FROM security_audit_events ORDER BY sequence'
+  );
+  for (let index = 1; index < allAuditRows.length; index += 1) {
+    assert.equal(allAuditRows[index].previous_hash, allAuditRows[index - 1].event_hash);
+  }
 
   const target = auditRows[0];
   await assert.rejects(

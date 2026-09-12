@@ -7,6 +7,8 @@ import { getAccountStatuses } from '../accounts/service.js';
 export async function executeReadOnlyTool(toolName, params = {}, identity = {}) {
   const authorization = authorizeTool(toolName, identity);
   if (!authorization.allowed) throw new Error(authorization.reason);
+  if (authorization.tool.classification !== 'READ_ONLY')
+    throw new Error('READ_ONLY_TOOL_REQUIRED');
   if (toolName === 'searchTAIN') return retrieveTain(params.query, { missionId: params.missionId || null, limit: params.limit });
   if (toolName === 'getSystemStatus') return { tool: toolName, connected: true, verificationState: 'VERIFIED', ...getSystemSnapshot() };
   if (toolName === 'getConnectedAccountStatus') return { tool: toolName, verificationState: 'VERIFIED', source: 'ENCRYPTED_SERVER_TOKEN_STORE', ...(await getAccountStatuses()) };

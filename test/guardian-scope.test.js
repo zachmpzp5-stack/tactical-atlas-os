@@ -6,7 +6,8 @@ import {
 } from '../server/security/guardian.js';
 
 test('Guardian authorization is derived from immutable server policy', () => {
-  assert.equal(authorizeGuardianRequest().allowed, true);
+  assert.equal(authorizeGuardianRequest('TACTICAL_ATLAS_PERSONAL').allowed, true);
+  assert.equal(authorizeGuardianRequest('WORKPLACE').allowed, true);
   assert.deepEqual(GUARDIAN_POLICY, {
     scope: 'TACTICAL_ATLAS_PERSONAL',
     dataBoundary: 'PERSONAL_PROJECT_ONLY',

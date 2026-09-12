@@ -19,13 +19,25 @@ test('memory retrieval intent is independent of the primary domain', () => {
   assert.equal(decision.domain, 'MISSION');
   assert.equal(decision.memoryPlan.action, 'SEARCH');
   assert.equal(runAtlasCore({ message: 'mission status' }).memoryPlan.action, 'NONE');
+  assert.equal(runAtlasCore({ message: 'record mission status' }).memoryPlan.action, 'NONE');
+  assert.equal(
+    runAtlasCore({
+      message: 'recall mission memory',
+      requestedTool: 'searchTAIN',
+      identity: { isCommander: false },
+    }).memoryPlan.action,
+    'NONE'
+  );
 });
 test('unknown and protected tools are denied by default', () => {
   assert.equal(authorizeTool('writeMission', { isCommander: true }).allowed, false);
   assert.equal(authorizeTool('searchTAIN', { isCommander: false }).allowed, false);
   assert.equal(authorizeTool('searchTAIN', { isCommander: true }).allowed, true);
   assert.equal(authorizeTool('proposeAction', { isCommander: false }).allowed, false);
-  assert.equal(authorizeTool('proposeAction', { isCommander: true }).allowed, true);
+  const proposal = authorizeTool('proposeAction', { isCommander: true });
+  assert.equal(proposal.allowed, true);
+  assert.equal(proposal.reason, 'AUTHORIZED_PROPOSAL_ONLY');
+  assert.equal(proposal.tool.classification, 'PROPOSAL_ONLY');
 });
 test('TAIN reports NOT_CONFIGURED without DATABASE_URL and fabricates no records', async () => {
   const databaseUrl = process.env.DATABASE_URL;

@@ -12,5 +12,11 @@ export function authorizeTool(name, identity = {}) {
   const tool = TOOL_REGISTRY[name];
   if (!tool) return { allowed: false, reason: 'UNKNOWN_TOOL', tool: null };
   if (tool.requiredClearance === 'OMEGA' && !identity.isCommander) return { allowed: false, reason: 'INSUFFICIENT_CLEARANCE', tool };
-  return { allowed: true, reason: 'AUTHORIZED_READ_ONLY', tool };
+  return {
+    allowed: true,
+    reason: tool.classification === EXECUTION_MODES.READ_ONLY
+      ? 'AUTHORIZED_READ_ONLY'
+      : 'AUTHORIZED_PROPOSAL_ONLY',
+    tool
+  };
 }
