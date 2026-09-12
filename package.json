@@ -101,7 +101,7 @@
       "main": "desktop/main.js"
     },
     "win": {
-      "icon": "public/assets/tactical-atlas-icon.png",
+      "icon": "desktop/assets/tactical-atlas.ico",
       "target": [
         {
           "target": "nsis",
@@ -125,7 +125,10 @@
       "createStartMenuShortcut": true,
       "shortcutName": "Tactical Atlas",
       "deleteAppDataOnUninstall": false,
-      "artifactName": "Tactical-Atlas-Setup-${version}-${arch}.${ext}"
+      "artifactName": "Tactical-Atlas-Setup-${version}-${arch}.${ext}",
+      "installerIcon": "desktop/assets/tactical-atlas.ico",
+      "uninstallerIcon": "desktop/assets/tactical-atlas.ico",
+      "installerHeaderIcon": "desktop/assets/tactical-atlas.ico"
     },
     "extraResources": [
       {

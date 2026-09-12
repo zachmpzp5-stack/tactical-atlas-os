@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; style-src 'unsafe-inline'; img-src 'none'; script-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'"
+    />
+    <meta name="color-scheme" content="dark" />
+    <title>Tactical Atlas</title>
+    <style>
+      :root {
+        color: #e2e8f0;
+        background: #020b08;
+        font-family: Consolas, 'Courier New', monospace;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        display: grid;
+        min-height: 100vh;
+        margin: 0;
+        place-items: center;
+        overflow: hidden;
+        background:
+          radial-gradient(circle at 50% 35%, rgb(16 185 129 / 14%), transparent 48%),
+          linear-gradient(145deg, #020b08, #07110d 70%);
+      }
+
+      main {
+        width: 420px;
+        padding: 38px 42px 34px;
+        border: 1px solid rgb(180 139 74 / 55%);
+        background: rgb(2 11 8 / 78%);
+        box-shadow:
+          0 0 34px rgb(16 185 129 / 12%),
+          inset 0 0 30px rgb(180 139 74 / 5%);
+        text-align: center;
+      }
+
+      .mark {
+        display: grid;
+        width: 70px;
+        height: 70px;
+        margin: 0 auto 22px;
+        place-items: center;
+        border: 1px solid #b48b4a;
+        color: #d5b36a;
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: 27px;
+        font-weight: 700;
+        letter-spacing: -2px;
+        transform: rotate(45deg);
+      }
+
+      .mark span {
+        transform: rotate(-45deg);
+      }
+
+      h1 {
+        margin: 0;
+        color: #f1f5f9;
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: 25px;
+        letter-spacing: 0.19em;
+      }
+
+      p {
+        margin: 9px 0 26px;
+        color: #b48b4a;
+        font-size: 10px;
+        letter-spacing: 0.24em;
+      }
+
+      .status {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #94a3b8;
+        font-size: 9px;
+        letter-spacing: 0.18em;
+        text-align: left;
+      }
+
+      .track {
+        position: relative;
+        flex: 1;
+        height: 2px;
+        overflow: hidden;
+        background: rgb(148 163 184 / 18%);
+      }
+
+      .track::after {
+        position: absolute;
+        inset: 0;
+        width: 38%;
+        background: #10b981;
+        content: '';
+        animation: initialize 1.2s ease-in-out infinite;
+      }
+
+      @keyframes initialize {
+        from {
+          transform: translateX(-110%);
+        }
+        to {
+          transform: translateX(370%);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="mark" aria-hidden="true"><span>TA</span></div>
+      <h1>TACTICAL ATLAS</h1>
+      <p>INTELLIGENCE OPERATING SYSTEM</p>
+      <div class="status">
+        <span>INITIALIZING</span>
+        <span class="track" aria-hidden="true"></span>
+      </div>
+    </main>
+  </body>
+</html>

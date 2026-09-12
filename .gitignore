@@ -13,3 +13,5 @@ coverage/
 *.log
 .DS_Store
 desktop-release/
+
+Tactical-Atlas-Windows-Release/

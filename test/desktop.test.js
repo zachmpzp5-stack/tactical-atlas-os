@@ -10,6 +10,7 @@ import {
   isTrustedAppUrl,
 } from '../desktop/security.js';
 import { startAtlasServer } from '../server/index.js';
+import { createMainWindowOptions, createSplashWindowOptions } from '../desktop/window-options.js';
 
 function request(url) {
   return new Promise((resolve, reject) => {
@@ -100,12 +101,44 @@ test('desktop packaging uses a hardened renderer and creates Windows shortcuts',
   );
   assert.equal(packageJson.build.nsis.createDesktopShortcut, true);
   assert.equal(packageJson.build.nsis.createStartMenuShortcut, true);
+  assert.equal(packageJson.build.nsis.shortcutName, 'Tactical Atlas');
+  assert.equal(packageJson.build.win.icon, 'desktop/assets/tactical-atlas.ico');
+  assert.equal(packageJson.build.nsis.installerIcon, packageJson.build.win.icon);
+  assert.equal(packageJson.build.nsis.uninstallerIcon, packageJson.build.win.icon);
+  assert.equal(packageJson.build.nsis.installerHeaderIcon, packageJson.build.win.icon);
   assert.ok(packageJson.build.files.includes('!node_modules/@capacitor{,/**/*}'));
   assert.ok(packageJson.build.files.includes('!node_modules/react{,/**/*}'));
+
+  const icon = await fs.readFile(packageJson.build.win.icon);
+  assert.equal(icon.readUInt16LE(0), 0);
+  assert.equal(icon.readUInt16LE(2), 1);
+  assert.ok(icon.readUInt16LE(4) >= 7);
+
+  const mainWindowOptions = createMainWindowOptions('atlas.png');
+  const splashWindowOptions = createSplashWindowOptions('atlas.png');
+  for (const options of [mainWindowOptions, splashWindowOptions]) {
+    assert.equal(options.icon, 'atlas.png');
+    assert.equal(options.webPreferences.contextIsolation, true);
+    assert.equal(options.webPreferences.nodeIntegration, false);
+    assert.equal(options.webPreferences.sandbox, true);
+    assert.equal(options.webPreferences.webSecurity, true);
+    assert.equal(options.webPreferences.allowRunningInsecureContent, false);
+    assert.equal('preload' in options.webPreferences, false);
+  }
+  assert.equal(mainWindowOptions.show, false);
+  assert.equal(splashWindowOptions.frame, false);
+  assert.equal(splashWindowOptions.resizable, false);
+
   const main = await fs.readFile('desktop/main.js', 'utf8');
-  assert.match(main, /contextIsolation: true/);
-  assert.match(main, /nodeIntegration: false/);
-  assert.match(main, /sandbox: true/);
+  assert.match(main, /setAppUserModelId\('com\.zachperryman\.tacticalatlas'\)/);
   assert.match(main, /setWindowOpenHandler/);
+  assert.match(main, /will-attach-webview/);
+  assert.match(main, /closeSplashWindow\(\);[\s\S]*window\.show\(\)/);
   assert.doesNotMatch(main, /preload:/);
+
+  const splash = await fs.readFile('desktop/splash.html', 'utf8');
+  assert.match(splash, /default-src 'none'/);
+  assert.match(splash, /script-src 'none'/);
+  assert.match(splash, /TACTICAL ATLAS/);
+  assert.doesNotMatch(splash, /<script/i);
 });

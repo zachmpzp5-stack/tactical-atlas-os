@@ -2,6 +2,10 @@
 
 Tactical Atlas runs as a hardened Electron shell around the existing loopback-only Node server. The renderer has no Node integration or preload bridge, and the application server binds only to `127.0.0.1`.
 
+## Branding and startup
+
+The Windows application, installer, uninstaller, Desktop shortcut, Start Menu shortcut, and window use Tactical Atlas branding. `desktop/assets/tactical-atlas.ico` is a multi-resolution Windows icon derived from the repository-owned `public/assets/tactical-atlas-icon.png` asset. The startup screen is local, script-free, and closes when the main window is ready to display.
+
 ## Build artifacts
 
 Use Node.js 24.20.0, then run:
